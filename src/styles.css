@@ -1,0 +1,284 @@
+/* Sci-fi beginner phase multiverse theme */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Fira+Code:wght@400;600&display=swap');
+
+:root {
+  --bg: #050406;
+  --bg-2: #0b0b0d;
+  --panel: #111114;
+  --primary: #ff7a00; /* primary orange */
+  --secondary: #7a3f2a; /* warm brown */
+  --text: #e6e6e6;
+  --muted: #b0a7a2;
+  --border: rgba(255, 122, 0, 0.28);
+  --focus: rgba(255, 122, 0, 0.55);
+}
+
+html, body, #root {
+  height: 100%;
+  background: radial-gradient(800px 400px at 8% 10%, rgba(255,122,0,0.08), transparent),
+              linear-gradient(180deg, var(--bg), var(--bg-2));
+  color: var(--text);
+  font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'JetBrains Mono', monospace;
+}
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.2));
+  border-bottom: 1px solid var(--border);
+  z-index: 50;
+}
+.brand {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  text-decoration: none;
+  text-shadow: 0 0 10px rgba(255,122,0,0.35);
+}
+
+.app-main {
+  flex: 1;
+  padding: 32px 20px;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin: 0 auto 28px auto;
+}
+.hero-title {
+  font-size: clamp(28px, 5vw, 48px);
+  color: var(--primary);
+  text-shadow: 0 0 12px rgba(255,122,0,0.45);
+  font-family: 'Orbitron', sans-serif;
+}
+.hero-subtitle {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+/* Glass hero card */
+.hero-card {
+  max-width: 980px;
+  margin: 22px auto 28px auto;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 18px rgba(255,122,0,0.35), 0 0 4px rgba(255,122,0,0.55) inset;
+  background: linear-gradient(180deg, rgba(122,63,42,0.12), rgba(0,0,0,0.35));
+  position: relative;
+}
+.hero-card img { width: 100%; height: auto; display: block; filter: contrast(1.05) saturate(1.1); }
+.scanline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 100% 3px;
+  opacity: 0.35;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  position: relative;
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(122,63,42,0.12), rgba(0,0,0,0.4));
+  box-shadow: 0 0 18px rgba(255,122,0,0.35);
+  cursor: pointer;
+  isolation: isolate;
+}
+.card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.06) saturate(1.12);
+}
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.7));
+  padding: 14px;
+}
+.card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  color: var(--primary);
+}
+.card-tagline {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Glitch hover */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px dashed rgba(255,122,0,0.25);
+  opacity: 0;
+  transform: translate3d(0,0,0);
+  pointer-events: none;
+}
+.card:hover::after {
+  opacity: 1;
+  animation: glitch 700ms steps(2, end) infinite;
+}
+/* Glitch hover: slice translate + clip flicker + chromatic aberration */
+@keyframes glitch {
+  0% { clip-path: inset(10% 0 80% 0); transform: translateX(-1px); filter: hue-rotate(5deg); }
+  20% { clip-path: inset(40% 0 40% 0); transform: translateX(1px); }
+  40% { clip-path: inset(70% 0 10% 0); transform: translateX(-2px); filter: hue-rotate(-4deg); }
+  60% { clip-path: inset(30% 0 50% 0); transform: translateX(2px); }
+  80% { clip-path: inset(60% 0 20% 0); transform: translateX(-1px); filter: hue-rotate(2deg); }
+  100% { clip-path: inset(10% 0 80% 0); transform: translateX(0); }
+}
+
+/* Question page */
+.question-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.question-header {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.question-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 18px rgba(255,122,0,0.35);
+}
+.question-title { color: var(--primary); font-size: 22px; font-family: 'Orbitron', sans-serif; }
+.question-desc { color: var(--muted); margin-top: 6px; }
+.hint {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: rgba(255,122,0,0.06);
+  color: var(--text);
+}
+
+/* CodeExecutor */
+.exec-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+.exec-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.select, .button, .input {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.button { cursor: pointer; }
+.button-primary {
+  background: linear-gradient(90deg, var(--primary), #ff9440);
+  color: #1a1a1a;
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(255,122,0,0.55);
+}
+.editor {
+  width: 100%;
+  min-height: 220px;
+  background: #0f0f0f;
+  color: #eaeaea;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'JetBrains Mono', monospace;
+  padding: 12px;
+}
+.terminal {
+  white-space: pre-wrap;
+  background: #0f0f0f;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
+}
+.terminal.error { animation: shake 320ms ease-in-out 0s 1; }
+.terminal.error::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(0deg, rgba(255,64,64,0.12) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+}
+.spinner {
+  width: 16px; height: 16px; border: 2px solid #ff9440;
+  border-right-color: transparent; border-radius: 50%; display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,122,0,0.15); color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 12px rgba(255,122,0,0.35);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.9 } 50% { opacity: 0.6 } }
+
+/* Route change jitter */
+.route-container { position: relative; }
+.route-swizzle { animation: routeGlitch 260ms ease-in-out; }
+@keyframes routeGlitch {
+  0% { opacity: 0; transform: translateX(-4px); }
+  40% { opacity: 1; transform: translateX(2px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Accessibility focus ring */
+:focus-visible { outline: 2px solid var(--focus); box-shadow: 0 0 12px var(--focus); }
+
+/* Floating data shards with slight parallax */
+.parallax-shards { position: absolute; inset: 0; pointer-events: none; }
+.parallax-shards .shard {
+  position: absolute; width: 120px; height: 4px; background: linear-gradient(90deg, transparent, rgba(255,122,0,0.35), transparent);
+  filter: blur(0.6px);
+  animation: shardDrift 8s ease-in-out infinite;
+}
+@keyframes shardDrift {
+  0% { transform: translateY(-6px) translateX(-4px); opacity: 0.55; }
+  50% { transform: translateY(6px) translateX(4px); opacity: 0.25; }
+  100% { transform: translateY(-6px) translateX(-4px); opacity: 0.55; }
+}
