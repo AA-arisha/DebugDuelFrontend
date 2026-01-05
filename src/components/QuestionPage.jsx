@@ -1,37 +1,79 @@
-import { useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import CodeExecutor from './CodeExecutor.jsx'
-import { getQuestionById } from '../data/questions'
-
+import { useParams, Link } from 'react-router-dom';
+import api from '../api';
+import { useEffect, useState } from 'react';
+import CodeExecutor from './CodeExecutor';
 export default function QuestionPage() {
-  const { id } = useParams()
-  const data = useMemo(() => getQuestionById(id), [id])
-  const randomQuestion = useMemo(() => {
-    const samples = [
-      'Why does the function return undefined instead of a value?',
-      'Spot the off-by-one error and fix the range.',
-      'What change prevents a NullPointerException in this flow?',
-      'How would you ensure the program prints 8 as expected?',
-    ]
-    return samples[Math.floor(Math.random() * samples.length)]
-  }, [id])
+  const { id } = useParams();
+  const [problem, setProblem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProblem = async () => {
+      try {
+        const response = await api.get(`/problems/${id}`);
+        setProblem(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProblem();
+  }, [id]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!problem) return <p>No problem found.</p>;
+
+  
+  const visibleTestCases = problem.testcases?.filter(tc => !tc.isHidden) || [];
+  console.log(visibleTestCases)
+  console.log(problem.buggyCodes)
 
   return (
     <div className="question-wrap">
-      <div className="question-header">
-        <img className="question-img" src={data.image} alt={`Universe ${id}`} />
-        <div>
-          <h2 className="question-title">{data.title}</h2>
-          <p className="question-desc">{data.description}</p>
-          <div className="hint" aria-label="Question">Question: {randomQuestion}</div>
-          <div className="hint">{data.expected}</div>
-          <div style={{ marginTop: 10 }}>
-            <Link to="/" className="brand">← Back to universes</Link>
-          </div>
+      <div style={{ marginBottom: '24px' }}>
+        <Link to="/" className="brand">← Back to universes</Link>
+      </div>
+
+      <div className="problem-section">
+        <h3 className="section-title">Problem: {problem.title}</h3>
+        <div className="problem-statement">
+          <p>{problem.description}</p>
         </div>
       </div>
 
-      <CodeExecutor language={data.language} code={data.code} />
+      <div className="test-cases-section">
+        <h3 className="section-title">Test Cases</h3>
+        <div className="test-cases-list">
+          {visibleTestCases.length > 0 ? (
+            visibleTestCases.map((testCase, index) => (
+              <div className="test-case-card" key={index}>
+                <div className="test-case-header">
+                  <span className="test-case-badge">Test Case {index + 1}</span>
+                  <span className="test-case-desc">{testCase.description}</span>
+                </div>
+                <div className="test-case-content">
+                  <div className="test-case-item">
+                    <label className="test-label">Input:</label>
+                    <code className="test-code">{testCase.input}</code>
+                  </div>
+                  <div className="test-case-item">
+                    <label className="test-label">Expected Output:</label>
+                    <code className="test-code">{testCase.expected}</code>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No test cases available.</p>
+          )}
+        </div>
+      </div>
+
+      <CodeExecutor  code={problem.buggyCodes} problemId={problem.id} />
     </div>
-  )
+  );
 }
