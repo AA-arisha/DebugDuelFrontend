@@ -1,14 +1,14 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import Home from './pages/Home.jsx'
-import QuestionPage from './components/QuestionPage.jsx'
-import './App.css'
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Home, QuestionPage } from './pages';
 
 export default function App() {
-  const location = useLocation()
+  const location = useLocation();
   return (
     <div className="app-shell">
       <header className="app-header">
-        <Link to="/" className="brand">PROCOM Multiverse Debugging Challenge</Link>
+        <Link to="/" className="brand">
+          PROCOM Multiverse Debugging Challenge
+        </Link>
       </header>
 
       <main className="app-main">
@@ -25,5 +25,5 @@ export default function App() {
         </div>
       </main>
     </div>
-  )
+  );
 }

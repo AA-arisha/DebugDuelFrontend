@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
-import api from '../api';
+import api from '../services/api';
 import { useEffect, useState } from 'react';
-import CodeExecutor from './CodeExecutor';
+import CodeExecutor from '../components/CodeExecutor';
 export default function QuestionPage() {
   const { id } = useParams();
   const [problem, setProblem] = useState(null);
@@ -27,15 +27,16 @@ export default function QuestionPage() {
   if (error) return <p>Error: {error}</p>;
   if (!problem) return <p>No problem found.</p>;
 
-  
-  const visibleTestCases = problem.testcases?.filter(tc => !tc.isHidden) || [];
-  console.log(visibleTestCases)
-  console.log(problem.buggyCodes)
+  const visibleTestCases = problem.testcases?.filter((tc) => !tc.isHidden) || [];
+  console.log(visibleTestCases);
+  console.log(problem.buggyCodes);
 
   return (
     <div className="question-wrap">
       <div style={{ marginBottom: '24px' }}>
-        <Link to="/" className="brand">← Back to universes</Link>
+        <Link to="/" className="brand">
+          ← Back to universes
+        </Link>
       </div>
 
       <div className="problem-section">
@@ -73,7 +74,7 @@ export default function QuestionPage() {
         </div>
       </div>
 
-      <CodeExecutor  code={problem.buggyCodes} problemId={problem.id} />
+      <CodeExecutor code={problem.buggyCodes} problemId={problem.id} />
     </div>
   );
 }
