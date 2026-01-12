@@ -1,0 +1,286 @@
+/* =========================
+   LANDING PAGE SCOPED STYLES
+   All styles prefixed with .landing-page
+========================= */
+
+/* =========================
+   MAIN SECTION
+========================= */
+.landing-page {
+  height: 100vh;
+  width: 100%;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
+   VIDEO BACKGROUND
+========================= */
+.landing-page__smoke-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+/* =========================
+   LAYERING
+========================= */
+.landing-page__title,
+.landing-page__subheading,
+.landing-page__enter-btn {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================
+   MAIN HEADING — DEBUG DUEL
+========================= */
+.landing-page__title {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+
+  font-family: 'Audiowide', cursive;
+  font-size: 5em;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+
+  color: #ff4500; /* Fiery lava-orange/red */
+  text-shadow: 0 0 8px rgba(255, 69, 0, 0.8); /* Inner glow only */
+
+  animation: landing-title-flicker 3s infinite alternate;
+}
+
+/* =========================
+   LETTER BASE ANIMATION
+========================= */
+.landing-page__title span {
+  display: inline-block;
+  position: relative;
+
+  opacity: 0;
+  transform: translateY(40px) rotateX(90deg) scale(0.7);
+  filter: blur(10px);
+
+  animation: landing-letter-reveal 0.8s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards,
+    landing-glitch-move 2.5s infinite;
+}
+
+/* =========================
+   PER-LETTER OUTLINE
+========================= */
+.landing-page__title span::after {
+  content: attr(data-letter);
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  color: transparent;
+  -webkit-text-stroke: 1px #0ccfc9;
+
+  z-index: -1;
+  opacity: 0.85;
+
+  animation: landing-outline-glitch 2.8s infinite;
+}
+
+/* Different glitch timing per letter */
+.landing-page__title span:nth-child(even)::after {
+  animation-duration: 1.8s;
+}
+.landing-page__title span:nth-child(odd)::after {
+  animation-duration: 3.2s;
+}
+
+/* =========================
+   LETTER DELAYS
+========================= */
+.landing-page__title span:nth-child(1) {
+  animation-delay: 0.75s;
+}
+.landing-page__title span:nth-child(2) {
+  animation-delay: 1.25s;
+}
+.landing-page__title span:nth-child(3) {
+  animation-delay: 1.75s;
+}
+.landing-page__title span:nth-child(4) {
+  animation-delay: 2s;
+}
+.landing-page__title span:nth-child(5) {
+  animation-delay: 2.5s;
+}
+.landing-page__title span:nth-child(6) {
+  animation-delay: 3s;
+}
+.landing-page__title span:nth-child(7) {
+  animation-delay: 3.5s;
+}
+.landing-page__title span:nth-child(8) {
+  animation-delay: 4s;
+}
+.landing-page__title span:nth-child(9) {
+  animation-delay: 4.5s;
+}
+.landing-page__title span:nth-child(10) {
+  animation-delay: 5s;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes landing-letter-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes landing-glitch-move {
+  0%,
+  100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-3px, 1px);
+  }
+  80% {
+    transform: translate(3px, -1px);
+  }
+}
+
+@keyframes landing-outline-glitch {
+  0%,
+  100% {
+    transform: translate(0);
+    opacity: 0.85;
+  }
+  92% {
+    transform: translate(-2px, 1px);
+  }
+  94% {
+    transform: translate(3px, -1px);
+    opacity: 0.7;
+  }
+  96% {
+    transform: translate(-1px, 2px);
+  }
+}
+
+@keyframes landing-title-flicker {
+  0% {
+    opacity: 1;
+  }
+  5% {
+    opacity: 0.7;
+  }
+  10% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.95;
+  }
+}
+
+/* =========================
+   SUBHEADING
+========================= */
+.landing-page__subheading {
+  position: absolute;
+  top: 60%;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+
+  font-family: 'Audiowide', cursive;
+  font-size: 1.1em;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+
+  color: #888;
+  text-shadow: 0 0 12px rgba(12, 207, 201, 0.3);
+
+  opacity: 0;
+  animation: landing-sub-fade-in 1.5s ease forwards;
+  animation-delay: 6.5s;
+}
+
+@keyframes landing-sub-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   ENTER BUTTON
+========================= */
+.landing-page__enter-btn {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 14px 38px;
+  font-family: 'Audiowide', cursive;
+  font-size: 1em;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+
+  color: #0ccfc9;
+  background: transparent;
+  border: 2px solid #0ccfc9;
+  cursor: pointer;
+
+  opacity: 0;
+  animation: landing-btn-fade-in 1.5s ease forwards;
+  animation-delay: 7.5s;
+
+  transition: all 0.3s ease;
+}
+
+.landing-page__enter-btn:hover {
+  background: rgba(12, 207, 201, 0.15);
+  box-shadow: 0 0 15px #0ccfc9, 0 0 40px rgba(12, 207, 201, 0.8),
+    inset 0 0 15px rgba(12, 207, 201, 0.5);
+
+  transform: translateX(-50%) scale(1.05);
+}
+
+@keyframes landing-btn-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

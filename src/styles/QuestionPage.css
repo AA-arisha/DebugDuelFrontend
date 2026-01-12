@@ -1,0 +1,122 @@
+/* =========================
+   QUESTION PAGE
+   All styles prefixed with .question-page
+========================= */
+
+.question-page {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.question-page__back-link {
+  margin-bottom: 24px;
+}
+
+/* Problem Section */
+.question-page__problem-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: rgba(255, 122, 0, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 122, 0, 0.2);
+}
+
+.question-page__section-title {
+  color: var(--primary);
+  font-size: 20px;
+  font-family: 'Orbitron', sans-serif;
+  margin-bottom: 16px;
+}
+
+.question-page__problem-statement {
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.question-page__test-cases-section {
+  margin-bottom: 32px;
+}
+
+.question-page__test-cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.question-page__test-case-card {
+  background: rgba(255, 122, 0, 0.04);
+  border: 1px solid rgba(255, 122, 0, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.question-page__test-case-card:hover {
+  border-color: rgba(255, 122, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.question-page__test-case-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(255, 122, 0, 0.2);
+}
+
+.question-page__test-case-badge {
+  background: var(--primary);
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.question-page__test-case-desc {
+  color: var(--muted);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.question-page__test-case-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.question-page__test-case-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-page__test-label {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.question-page__test-code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 122, 0, 0.15);
+  color: #0ff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  display: block;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+  .question-page__test-case-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
