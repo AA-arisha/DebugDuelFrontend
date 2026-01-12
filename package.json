@@ -1,5 +1,5 @@
 {
-  "name": "package",
+  "name": "debug-duel-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,10 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "prepare": "husky install",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/audiowide": "^5.2.7",
+    "@fontsource/fira-code": "^5.2.7",
+    "@fontsource/orbitron": "^5.2.8",
     "axios": "^1.13.2",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6"
@@ -22,8 +29,20 @@
     "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-react-refresh": "0.4.24",
     "globals": "^16.5.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^14.0.0",
+    "prettier": "^2.8.8",
     "vite": "^7.2.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,md,json}": [
+      "prettier --write"
+    ]
   }
 }
