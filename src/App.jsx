@@ -1,9 +1,7 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import Home from './pages/Home';
-import { QuestionPage } from './pages';
-import BattleLoginForm from './pages/BattleLoginForm';
-import BattleRoundsPage from './pages/BattleRoundsPage';
+
+import { HomePage, LoginForm, BattleRounds, QuestionPage } from './pages/index';
+
 export default function App() {
   const location = useLocation();
   // const showHeader = location.pathname !== '/';
@@ -28,9 +26,9 @@ export default function App() {
 
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/universes" element={<Home />} />
-            <Route path="login" element={<BattleLoginForm />} />
-            <Route path="battleRounds" element={<BattleRoundsPage />} />
+            {/* <Route path='universes' element={<Home/>}/> */}
+            <Route path="login" element={<LoginForm />} />
+            <Route path="battleRounds" element={<BattleRounds />} />
             <Route path="/question/:id" element={<QuestionPage />} />
           </Routes>
         </div>

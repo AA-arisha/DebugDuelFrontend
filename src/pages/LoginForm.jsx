@@ -14,7 +14,7 @@ const particleStyles = Array.from({ length: 40 }).map(() => ({
   boxShadow: '0 0 10px currentColor',
 }));
 
-export default function BattleLoginForm() {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');

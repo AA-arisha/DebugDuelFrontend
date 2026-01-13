@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
-import api from '../services/api';
+import api from '@/services/api';
 import { useEffect, useState } from 'react';
-import CodeExecutor from '../components/CodeExecutor';
-import '../styles/QuestionPage.css';
+import CodeExecutor from '@/components/CodeExecutor';
+import '@/styles/QuestionPage.css';
 
 export default function QuestionPage() {
   const { id } = useParams();
