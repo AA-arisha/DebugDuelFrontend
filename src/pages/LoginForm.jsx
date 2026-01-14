@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Swords, Shield } from 'lucide-react';
+import { Eye, EyeOff, Swords, Shield, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
+import api from '../services/api';
 
 // Generate particle styles once at module level (outside component)
 const particleStyles = Array.from({ length: 40 }).map(() => ({
@@ -16,17 +18,55 @@ const particleStyles = Array.from({ length: 40 }).map(() => ({
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [teamName, setTeamName] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isHovering, setIsHovering] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    console.log('Team entering battle:', { teamName, password });
-    // Add your login logic here
+  const { login } = useAuth();
+
+  const handleSubmit = async () => {
+    // Clear previous errors
+    setError('');
+
+    // Validation
+    if (!username.trim() || !password.trim()) {
+      setError('Team name and access code required');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Call login API
+      const response = await api.post('/login', {
+        username: username.trim(),
+        password: password,
+      });
+
+      const { token, role } = response.data;
+
+      // Use auth context login
+      login(token, role);
+    } catch (err) {
+      console.error('Login error:', err);
+
+      // Handle different error scenarios
+      if (err.response) {
+        setError(err.response.data.message || 'Invalid credentials');
+      } else if (err.request) {
+        setError('Unable to connect to server. Please try again.');
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !loading) {
       handleSubmit();
     }
   };
@@ -73,9 +113,7 @@ export default function LoginForm() {
             {/* Skull/Warning Icon */}
             <div className="relative inline-block mb-6">
               <div className="absolute inset-0 bg-red-600 blur-xl opacity-50 animate-pulse"></div>
-              {/* <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-red-600 to-orange-600 rounded-full flex items-center justify-center border-2 border-orange-400 shadow-lg shadow-red-500/50">
-                <Swords className="w-10 h-10 text-white animate-pulse" style={{ animationDuration: '2s' }} />
-              </div> */}
+
               {/* Orbiting particles */}
               <div
                 className="absolute top-1/2 left-1/2 w-24 h-24 -translate-x-1/2 -translate-y-1/2 animate-spin"
@@ -95,6 +133,14 @@ export default function LoginForm() {
             <p className="text-gray-500 text-xs font-mono">[ UNIVERSE STATUS: CRITICAL ]</p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg flex items-start gap-3 animate-pulse">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-red-300 text-sm font-mono">{error}</p>
+            </div>
+          )}
+
           {/* Input Fields */}
           <div className="space-y-6 mb-8">
             {/* Team Name Input */}
@@ -107,11 +153,12 @@ export default function LoginForm() {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg opacity-30 group-hover:opacity-50 blur transition-opacity"></div>
                 <input
                   type="text"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  disabled={loading}
                   placeholder="ENTER SQUAD NAME..."
-                  className="relative w-full px-4 py-4 bg-black/60 backdrop-blur-sm border-2 border-red-500/50 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:shadow-lg focus:shadow-orange-500/30 transition-all font-mono uppercase"
+                  className="relative w-full px-4 py-4 bg-black/60 backdrop-blur-sm border-2 border-red-500/50 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:shadow-lg focus:shadow-orange-500/30 transition-all font-mono uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -129,12 +176,14 @@ export default function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  disabled={loading}
                   placeholder="************"
-                  className="relative w-full px-4 py-4 pr-12 bg-black/60 backdrop-blur-sm border-2 border-red-500/50 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:shadow-lg focus:shadow-orange-500/30 transition-all font-mono"
+                  className="relative w-full px-4 py-4 pr-12 bg-black/60 backdrop-blur-sm border-2 border-red-500/50 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:shadow-lg focus:shadow-orange-500/30 transition-all font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-400 transition-colors p-1"
+                  disabled={loading}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-400 transition-colors p-1 disabled:opacity-50"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -147,23 +196,35 @@ export default function LoginForm() {
             onClick={handleSubmit}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className="relative w-full py-4 px-6 bg-gradient-to-r from-red-600 via-orange-600 to-red-600 hover:from-red-500 hover:via-orange-500 hover:to-red-500 text-white font-bold rounded-lg shadow-2xl shadow-red-600/50 transition-all duration-300 transform hover:scale-105 active:scale-95 overflow-hidden group border-2 border-orange-400/50"
+            disabled={loading}
+            className="relative w-full py-4 px-6 bg-gradient-to-r from-red-600 via-orange-600 to-red-600 hover:from-red-500 hover:via-orange-500 hover:to-red-500 text-white font-bold rounded-lg shadow-2xl shadow-red-600/50 transition-all duration-300 transform hover:scale-105 active:scale-95 overflow-hidden group border-2 border-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <span className="relative z-10 flex items-center justify-center gap-3 text-lg uppercase tracking-wider font-mono">
-              <Swords
-                className={`w-6 h-6 transition-transform duration-500 ${
-                  isHovering ? 'rotate-180' : ''
-                }`}
-              />
-              ENTER THE BATTLEFIELD
-              <Swords
-                className={`w-6 h-6 transition-transform duration-500 ${
-                  isHovering ? 'rotate-180' : ''
-                }`}
-              />
+              {loading ? (
+                <>
+                  <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                  AUTHENTICATING...
+                </>
+              ) : (
+                <>
+                  <Swords
+                    className={`w-6 h-6 transition-transform duration-500 ${
+                      isHovering ? 'rotate-180' : ''
+                    }`}
+                  />
+                  ENTER THE BATTLEFIELD
+                  <Swords
+                    className={`w-6 h-6 transition-transform duration-500 ${
+                      isHovering ? 'rotate-180' : ''
+                    }`}
+                  />
+                </>
+              )}
             </span>
             {/* Animated shine effect */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            {!loading && (
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            )}
           </button>
 
           {/* Status bar */}

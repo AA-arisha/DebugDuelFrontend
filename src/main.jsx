@@ -13,6 +13,8 @@ import './styles/theme.css';
 import './styles/components.css';
 
 import App from './App.jsx';
+import { AuthProvider } from './context/AuthProvider';
+
 import '@fontsource/orbitron/500.css';
 import '@fontsource/orbitron/700.css';
 import '@fontsource/fira-code/400.css';
@@ -22,7 +24,9 @@ import '@fontsource/audiowide/400.css';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );
