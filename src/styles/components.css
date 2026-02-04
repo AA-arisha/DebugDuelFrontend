@@ -121,10 +121,12 @@
   box-shadow: 0 0 18px rgba(255, 122, 0, 0.55);
 }
 
+/* Two-column layout: Editor 60%, Output 40% */
 .editor-output-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr;
   gap: 20px;
+  align-items: start;
 }
 
 .editor-container {
@@ -134,6 +136,9 @@
   overflow: hidden;
   box-shadow: 0 0 18px rgba(255, 122, 0, 0.35);
   position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .editor-container::before {
   content: '';
@@ -155,6 +160,7 @@
   gap: 8px;
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
 }
 .editor-dot {
   width: 12px;
@@ -177,7 +183,8 @@
 
 .editor {
   width: 100%;
-  min-height: 400px;
+  min-height: 600px;
+  flex: 1;
   background: #0f0f0f;
   color: #eaeaea;
   border: none;
@@ -185,12 +192,33 @@
   font-size: 14px;
   line-height: 1.7;
   padding: 20px;
-  resize: vertical;
+  resize: none;
   position: relative;
   z-index: 2;
+  overflow-y: auto;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 4;
+  -moz-tab-size: 4;
 }
 .editor:focus {
   outline: none;
+}
+
+/* Custom scrollbar for editor */
+.editor::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.editor::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+.editor::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+.editor::-webkit-scrollbar-thumb:hover {
+  background: #ff9440;
 }
 
 .output-container {
@@ -200,6 +228,9 @@
   overflow: hidden;
   box-shadow: 0 0 18px rgba(255, 122, 0, 0.35);
   position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .output-container::before {
   content: '';
@@ -221,6 +252,7 @@
   align-items: center;
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
 }
 .output-title {
   font-size: 15px;
@@ -233,14 +265,16 @@
 
 .terminal {
   white-space: pre-wrap;
+  word-wrap: break-word;
   background: #0f0f0f;
   color: #0ff;
   padding: 20px;
-  min-height: 200px;
-  max-height: 400px;
+  min-height: 600px;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: auto;
   font-family: 'Fira Code', monospace;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.7;
   position: relative;
   z-index: 2;
@@ -264,6 +298,35 @@
   );
   pointer-events: none;
   z-index: 0;
+}
+
+/* Pre tag styling for proper code formatting */
+.terminal pre {
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+/* Custom scrollbar for terminal */
+.terminal::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.terminal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+.terminal::-webkit-scrollbar-thumb {
+  background: #0ff;
+  border-radius: 4px;
+}
+.terminal::-webkit-scrollbar-thumb:hover {
+  background: #0cc;
 }
 
 .spinner {
@@ -320,92 +383,7 @@
   }
 }
 
-/* Input and Output Container - Stack vertically on the right */
-.input-output-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.input-container {
-  background: linear-gradient(180deg, rgba(122, 63, 42, 0.12), rgba(0, 0, 0, 0.4));
-  border: 2px solid var(--primary);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 18px rgba(255, 122, 0, 0.35);
-  position: relative;
-}
-.input-container::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 100% 3px;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 1;
-}
-.input-header {
-  background: rgba(0, 0, 0, 0.5);
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-}
-.input-title {
-  font-size: 15px;
-  font-weight: 600;
-  font-family: 'Orbitron', sans-serif;
-  color: var(--primary);
-  text-shadow: 0 0 10px rgba(255, 122, 0, 0.35);
-  letter-spacing: 0.04em;
-}
-.input-area {
-  width: 100%;
-  min-height: 150px;
-  max-height: 200px;
-  background: #0f0f0f;
-  color: #ffbd2e;
-  border: none;
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 14px;
-  line-height: 1.7;
-  padding: 20px;
-  resize: vertical;
-  position: relative;
-  z-index: 2;
-  overflow-y: auto;
-}
-.input-area:focus {
-  outline: none;
-}
-.input-area::placeholder {
-  color: var(--muted);
-  font-style: italic;
-  opacity: 0.6;
-}
-
-.input-area::-webkit-scrollbar {
-  width: 8px;
-}
-.input-area::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-}
-.input-area::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-.input-area::-webkit-scrollbar-thumb:hover {
-  background: #ff9440;
-}
-
-.input-output-container .output-container .terminal {
-  min-height: 150px;
-  max-height: 300px;
-}
-
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .exec-header {
     flex-direction: column;
@@ -422,14 +400,8 @@
   .editor-output-container {
     grid-template-columns: 1fr;
   }
-  .input-output-container {
-    gap: 16px;
-  }
-  .input-area {
-    min-height: 120px;
-  }
-  .input-output-container .output-container .terminal {
-    min-height: 120px;
-    max-height: 250px;
+  .editor,
+  .terminal {
+    min-height: 300px;
   }
 }

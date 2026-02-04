@@ -6,7 +6,7 @@ import { Badge } from '../components/ui/Badge';
 import QuestionsTable from '../components/roundControl/QuestionsTable';
 import RoundInfoCard from '../components/roundControl/RoundInfoCard';
 import Tabs from '../components/roundControl/Tabs';
-import QuestionModal from '../components/roundControl/Modals/QuestionModal';
+// import QuestionModal from '../components/roundControl/Modals/QuestionModal';
 import ViewQuestionModal from '../components/roundControl/Modals/ViewQuestionModal';
 import SubmissionModal from '../components/roundControl/Modals/SubmissionModal';
 import Leaderboard from '../components/roundControl/Leaderboard';
@@ -252,10 +252,10 @@ export default function RoundControlPanel() {
 
   const [editingQuestion, setEditingQuestion] = useState(null);
 
-  const handleAddQuestion = () => {
-    setEditingQuestion(null);
-    setQuestionModalOpen(true);
-  };
+  // const handleAddQuestion = () => {
+  //   setEditingQuestion(null);
+  //   setQuestionModalOpen(true);
+  // };
 
   const handleEditQuestion = (q) => {
     setEditingQuestion(q);
@@ -411,7 +411,7 @@ export default function RoundControlPanel() {
           detailsLoading={detailsLoading}
           detailsError={detailsError}
           questions={questions}
-          onAddQuestion={handleAddQuestion}
+          // onAddQuestion={handleAddQuestion}
           onViewQuestion={(q) => setViewingQuestion(q)}
           onEditQuestion={handleEditQuestion}
           onDeleteQuestion={handleDeleteQuestion}
@@ -427,7 +427,7 @@ export default function RoundControlPanel() {
         />
 
         {/* Question Modal */}
-        <QuestionModal
+        {/* <QuestionModal
           open={questionModalOpen}
           onClose={() => {
             setQuestionModalOpen(false);
@@ -436,7 +436,7 @@ export default function RoundControlPanel() {
           onSave={handleSaveQuestion}
           isSaving={isSavingQuestion}
           initialQuestion={editingQuestion}
-        />
+        /> */}
 
         {/* View Question Modal */}
         <ViewQuestionModal question={viewingQuestion} onClose={() => setViewingQuestion(null)} />

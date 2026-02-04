@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom'; // keep if using react-router
 import api from '../../services/api';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import CodeExecutor from '@/components/CodeExecutor';
 import '@/styles/QuestionPage.css';
 
@@ -10,6 +10,7 @@ export default function QuestionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
+  const executorRef = useRef(null);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -58,6 +59,13 @@ export default function QuestionDetailPage() {
                 <div className="question-page__test-case-header">
                   <span className="question-page__test-case-badge">Test Case {index + 1}</span>
                   <span className="question-page__test-case-desc">{testCase.description}</span>
+                  <button
+                    className="button button-primary"
+                    onClick={() => executorRef.current?.runWithInput(testCase.input)}
+                    disabled={false}
+                  >
+                    {'▶ RUN TEST'}
+                  </button>
                 </div>
                 <div className="question-page__test-case-content">
                   <div className="question-page__test-case-item">
@@ -77,7 +85,7 @@ export default function QuestionDetailPage() {
         </div>
       </div>
 
-      <CodeExecutor code={problem.buggyCodes} questionId={problem.id} />
+      <CodeExecutor ref={executorRef} code={problem.buggyCodes} questionId={problem.id} roundId={problem.roundId} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import api from '@/services/api';
 import { useAuth } from '@/context/useAuth';
 
@@ -19,13 +19,13 @@ int main() {
 }`,
 };
 
-export default function CodeExecutor({
+export default forwardRef(function CodeExecutor({
   code: buggyCodes = [],
   questionId,
-  roundId = null,
+  roundId,
   userAttempt = null,
   onSubmitSuccess = null,
-}) {
+}, ref) {
   const { user } = useAuth();
   const userId = user?.userId || user?.id || null;
 
@@ -59,16 +59,20 @@ export default function CodeExecutor({
     setIsError(false);
   };
 
-  const runCode = async () => {
+  const runCode = async (stdin = null) => {
     setLoading(true);
     setOutput('');
     setIsError(false);
+
+    // prefer provided stdin over state so parent can trigger run immediately
+    const stdinData = stdin !== null ? stdin : inputData;
+    if (stdin !== null) setInputData(stdin);
 
     try {
       const response = await api.post('/run', {
         code: editorCode,
         language,
-        stdin: inputData,
+        stdin: stdinData,
       });
       setOutput(response.data.output || 'Code executed successfully!');
     } catch (err) {
@@ -78,6 +82,11 @@ export default function CodeExecutor({
       setLoading(false);
     }
   };
+
+  // expose a runWithInput method to parent components (QuestionDetailPage)
+  useImperativeHandle(ref, () => ({
+    runWithInput: (stdin) => runCode(stdin),
+  }));
 
   const submitCode = async () => {
     if (!questionId) return setOutput('Error: Question ID is missing');
@@ -100,7 +109,7 @@ export default function CodeExecutor({
       if (data.success || data.solved) {
         setIsError(false);
         setOutput(
-          `✓ All test cases passed! (${data.passedTests ?? data.passed ?? 'N/A'}/${
+          `test cases passed! (${data.passedTests ?? data.passed ?? 'N/A'}/${
             data.totalTests ?? data.total ?? 'N/A'
           })`
         );
@@ -149,83 +158,67 @@ export default function CodeExecutor({
   };
 
   return (
-    <div className="exec-panel">
-      <div className="exec-header">
-        <div className="language-selector">
-          <span className="language-label">LANGUAGE</span>
-          <select className="select" value={language} onChange={handleLanguageChange}>
-            {languages.map((lang) => (
-              <option key={lang} value={lang}>
-                {languageNames[lang] || lang.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </div>
+   <div className="exec-panel">
+  <div className="exec-header">
+    <div className="language-selector">
+      <span className="language-label">LANGUAGE</span>
+      <select className="select" value={language} onChange={handleLanguageChange}>
+        {languages.map((lang) => (
+          <option key={lang} value={lang}>
+            {languageNames[lang] || lang.toUpperCase()}
+          </option>
+        ))}
+      </select>
+    </div>
 
-        <div className="actions-group">
-          <button className="button button-primary" onClick={runCode} disabled={loading}>
-            {loading ? <span className="spinner" /> : '▶ RUN CODE'}
-          </button>
+    <div className="actions-group">
+      <button
+        className="button button-submit"
+        onClick={submitCode}
+        disabled={loading || userAttempt?.solved || userAttempt?.attempts >= 3}
+      >
+        {userAttempt?.solved
+          ? 'Solved'
+          : userAttempt?.attempts >= 3
+          ? 'Attempts exhausted'
+          : '✓ SUBMIT'}
+      </button>
+    </div>
+  </div>
 
-          <button
-            className="button button-submit"
-            onClick={submitCode}
-            disabled={loading || userAttempt?.solved || userAttempt?.attempts >= 3}
-          >
-            {userAttempt?.solved
-              ? 'Solved'
-              : userAttempt?.attempts >= 3
-              ? 'Attempts exhausted'
-              : '✓ SUBMIT'}
-          </button>
-        </div>
+  <div className="editor-output-container">
+    <div className="editor-container">
+      <div className="editor-header">
+        <div className="editor-dot" />
+        <div className="editor-dot" />
+        <div className="editor-dot" />
       </div>
 
-      <div className="editor-output-container">
-        <div className="editor-container">
-          <div className="editor-header">
-            <div className="editor-dot" />
-            <div className="editor-dot" />
-            <div className="editor-dot" />
-          </div>
+      <textarea
+        className="editor"
+        value={editorCode}
+        onChange={(e) => setEditorCode(e.target.value)}
+        spellCheck="false"
+      />
+    </div>
 
-          <textarea
-            className="editor"
-            value={editorCode}
-            onChange={(e) => setEditorCode(e.target.value)}
-            spellCheck="false"
-          />
-        </div>
+    <div className="output-container">
+      <div className="output-header">
+        <span className="output-title">📋 OUTPUT</span>
+      </div>
 
-        <div className="input-output-container">
-          <div className="input-container">
-            <div className="input-header">
-              <span className="input-title">📥 INPUT</span>
-            </div>
-
-            <textarea
-              className="input-area"
-              value={inputData}
-              onChange={(e) => setInputData(e.target.value)}
-              placeholder="Enter input data here..."
-              spellCheck="false"
-            />
-          </div>
-
-          <div className="output-container">
-            <div className="output-header">
-              <span className="output-title">📋 OUTPUT</span>
-            </div>
-
-            <div
-              className={`terminal${isError ? ' error' : ''}${!output ? ' empty' : ''}`}
-              aria-live="polite"
-            >
-              {output || 'Output will appear here after running your code...'}
-            </div>
-          </div>
-        </div>
+      <div
+        className={`terminal${isError ? ' error' : ''}${!output ? ' empty' : ''}`}
+        aria-live="polite"
+      >
+        {output ? (
+          <pre>{output}</pre>
+        ) : (
+          'Output will appear here after running your code...'
+        )}
       </div>
     </div>
-  );
-}
+  </div>
+</div>
+   );
+ });
