@@ -1,19 +1,20 @@
-import { useParams, Link } from 'react-router-dom';
-import api from '@/services/api';
+import { useParams, Link, useLocation } from 'react-router-dom'; // keep if using react-router
+import api from '../../services/api';
 import { useEffect, useState } from 'react';
 import CodeExecutor from '@/components/CodeExecutor';
 import '@/styles/QuestionPage.css';
 
-export default function QuestionPage() {
+export default function QuestionDetailPage() {
   const { id } = useParams();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        const response = await api.get(`/problems/${id}`);
+        const response = await api.get(`/question/${id}`);
         setProblem(response.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message);
@@ -29,20 +30,22 @@ export default function QuestionPage() {
   if (error) return <p>Error: {error}</p>;
   if (!problem) return <p>No problem found.</p>;
 
-  const visibleTestCases = problem.testcases?.filter((tc) => !tc.isHidden) || [];
+  const visibleTestCases = problem.testcases?.filter((tc) => tc.isVisible) || [];
+
+  const backRoundId = location.state?.roundId;
 
   return (
     <div className="question-page">
       <div className="question-page__back-link">
-        <Link to="/universes" className="brand">
-          ← Back to universes
+        <Link to={backRoundId ? `/questions/${backRoundId}` : '/battleRounds'} className="brand">
+          ← Back
         </Link>
       </div>
 
       <div className="question-page__problem-section">
         <h3 className="question-page__section-title">Problem: {problem.title}</h3>
         <div className="question-page__problem-statement">
-          <p>{problem.description}</p>
+          <p>{problem.problemStatement}</p>
         </div>
       </div>
 
@@ -51,7 +54,7 @@ export default function QuestionPage() {
         <div className="question-page__test-cases-list">
           {visibleTestCases.length > 0 ? (
             visibleTestCases.map((testCase, index) => (
-              <div className="question-page__test-case-card" key={index}>
+              <div className="question-page__test-case-card" key={testCase.id || index}>
                 <div className="question-page__test-case-header">
                   <span className="question-page__test-case-badge">Test Case {index + 1}</span>
                   <span className="question-page__test-case-desc">{testCase.description}</span>
@@ -63,7 +66,7 @@ export default function QuestionPage() {
                   </div>
                   <div className="question-page__test-case-item">
                     <label className="question-page__test-label">Expected Output:</label>
-                    <code className="question-page__test-code">{testCase.expected}</code>
+                    <code className="question-page__test-code">{testCase.expectedOutput}</code>
                   </div>
                 </div>
               </div>
@@ -74,7 +77,7 @@ export default function QuestionPage() {
         </div>
       </div>
 
-      <CodeExecutor code={problem.buggyCodes} problemId={problem.id} />
+      <CodeExecutor code={problem.buggyCodes} questionId={problem.id} />
     </div>
   );
 }

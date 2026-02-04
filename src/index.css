@@ -1,7 +1,8 @@
-/* /* =========================
-   GLOBAL CSS RESET
-   Minimal global styles only
+/* =========================
+   Global Base Styles Only
 ========================= */
+/* NOTE: Tailwind CSS is now loaded only in AdminLayout.jsx */
+/* This file contains only global resets and base typography */
 
 * {
   margin: 0;
@@ -9,31 +10,13 @@
   box-sizing: border-box;
 }
 
+html,
 body {
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-#root {
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
 }
 
-/* Global Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1a1f3a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #4ade80;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #22c55e;
+#root {
+  width: 100%;
+  height: 100%;
 }
