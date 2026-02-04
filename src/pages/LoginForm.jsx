@@ -244,7 +244,7 @@ export default function LoginForm() {
         <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50 animate-pulse"></div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%,
           100% {

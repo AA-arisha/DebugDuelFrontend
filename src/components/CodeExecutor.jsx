@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import api from '../services/api';
+import api from '@/services/api';
+import { useAuth } from '@/context/useAuth';
 
 const FALLBACK_CODE = {
   cpp: `#include <iostream>
@@ -18,38 +19,35 @@ int main() {
 }`,
 };
 
-export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
-  // Handle if buggyCodes is a string (JSON) - parse it
+export default function CodeExecutor({
+  code: buggyCodes = [],
+  questionId,
+  roundId = null,
+  userAttempt = null,
+  onSubmitSuccess = null,
+}) {
+  const { user } = useAuth();
+  const userId = user?.userId || user?.id || null;
+
   const parsedCodes = useMemo(() => {
-    if (typeof buggyCodes === 'string') {
-      try {
-        return JSON.parse(buggyCodes);
-      } catch {
-        return {};
-      }
-    }
-    return buggyCodes;
+    if (!Array.isArray(buggyCodes)) return {};
+    return buggyCodes.reduce((acc, item) => {
+      if (item.language && item.code) acc[item.language] = item.code;
+      return acc;
+    }, {});
   }, [buggyCodes]);
 
-  // Extract available languages from code prop
-  const availableLanguages = Object.keys(parsedCodes).filter((lang) => {
-    // Filter out numeric keys and only keep valid language keys
-    return parsedCodes[lang] && isNaN(lang);
-  });
-
-  // Fallback to default languages if none provided
+  const availableLanguages = Object.keys(parsedCodes).filter((lang) => parsedCodes[lang]);
   const languages =
     availableLanguages.length > 0 ? availableLanguages : ['cpp', 'python', 'javascript', 'java'];
 
-  // Set initial language (first available or 'cpp')
-  const [language, setLanguage] = useState(languages[0] || 'cpp');
+  const [language, setLanguage] = useState(languages[0]);
   const [editorCode, setEditorCode] = useState('');
-  const [inputData, setInputData] = useState(''); // New state for input
+  const [inputData, setInputData] = useState('');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  // Update code when language changes
   useEffect(() => {
     const selectedCode = parsedCodes[language] || FALLBACK_CODE[language] || '// No code available';
     setEditorCode(selectedCode);
@@ -57,7 +55,7 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
-    setOutput(''); // Clear output when changing language
+    setOutput('');
     setIsError(false);
   };
 
@@ -67,18 +65,13 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
     setIsError(false);
 
     try {
-      // Send code, language, and input data to backend using axios
       const response = await api.post('/run', {
         code: editorCode,
-        language: language,
-        stdin: inputData, // Send input data as stdin
+        language,
+        stdin: inputData,
       });
-
-      // Handle successful response
       setOutput(response.data.output || 'Code executed successfully!');
-      setIsError(false);
     } catch (err) {
-      // Handle error response
       setIsError(true);
       setOutput(err.response?.data?.message || err.message || 'Failed to execute code');
     } finally {
@@ -86,7 +79,62 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
     }
   };
 
-  // Language display names
+  const submitCode = async () => {
+    if (!questionId) return setOutput('Error: Question ID is missing');
+    if (!userId) return setOutput('Error: You must be logged in to submit');
+    if (!roundId) return setOutput('Error: Round ID is missing');
+
+    setLoading(true);
+    setOutput('Submitting...');
+
+    try {
+      const res = await api.post(`/rounds/${roundId}/questions/${questionId}/submit`, {
+        code: editorCode,
+        language,
+        userId,
+      });
+
+      // Expect: { success: boolean, passedTests, totalTests, solved, attempts, message }
+      const data = res.data || {};
+
+      if (data.success || data.solved) {
+        setIsError(false);
+        setOutput(
+          `✓ All test cases passed! (${data.passedTests ?? data.passed ?? 'N/A'}/${
+            data.totalTests ?? data.total ?? 'N/A'
+          })`
+        );
+
+        // notify parent (hook/page) to refresh attempts / leaderboards
+        if (typeof onSubmitSuccess === 'function') onSubmitSuccess({ questionId, result: data });
+      } else {
+        setIsError(true);
+        setOutput(
+          data.message ||
+            `✗ Submission failed: ${
+              data.failedTest ? `Test ${data.failedTest}` : 'Some tests failed'
+            }`
+        );
+
+        if (typeof onSubmitSuccess === 'function') onSubmitSuccess({ questionId, result: data });
+      }
+    } catch (err) {
+      setIsError(true);
+      const msg = err.response?.data?.message || err.message || 'Unknown submission error';
+      setOutput('Submission failed: ' + msg);
+
+      // specific handling for max attempts
+      if (msg.toLowerCase().includes('max attempts') || err.response?.status === 429) {
+        // consider disabling submit in UI via userAttempt change
+      }
+
+      if (typeof onSubmitSuccess === 'function')
+        onSubmitSuccess({ questionId, result: { error: msg } });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const languageNames = {
     cpp: 'C++',
     python: 'Python',
@@ -116,60 +164,31 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
 
         <div className="actions-group">
           <button className="button button-primary" onClick={runCode} disabled={loading}>
-            {loading ? <span className="spinner" /> : '▶'}
-            RUN CODE
+            {loading ? <span className="spinner" /> : '▶ RUN CODE'}
           </button>
 
           <button
             className="button button-submit"
-            onClick={async () => {
-              if (!problemId) {
-                alert('Problem ID is missing');
-                return;
-              }
-              setLoading(true);
-              try {
-                const response = await api.post('/submit', {
-                  code: editorCode,
-                  language: language,
-                  problemId: problemId,
-                });
-
-                if (response.data.success) {
-                  alert(
-                    `✓ All test cases passed! (${response.data.passedTests}/${response.data.totalTests})`
-                  );
-                } else {
-                  alert(
-                    `✗ Test case ${response.data.failedTest} failed\n\nExpected: ${response.data.expected}\nGot: ${response.data.actual}`
-                  );
-                }
-              } catch (err) {
-                alert('Submission failed: ' + (err.response?.data?.message || err.message));
-              } finally {
-                setLoading(false);
-              }
-            }}
-            disabled={loading}
+            onClick={submitCode}
+            disabled={loading || userAttempt?.solved || userAttempt?.attempts >= 3}
           >
-            ✓ SUBMIT
+            {userAttempt?.solved
+              ? 'Solved'
+              : userAttempt?.attempts >= 3
+              ? 'Attempts exhausted'
+              : '✓ SUBMIT'}
           </button>
-
-          {loading && (
-            <span className="status-pill" aria-live="polite">
-              <span className="spinner" /> Running...
-            </span>
-          )}
         </div>
       </div>
 
       <div className="editor-output-container">
         <div className="editor-container">
           <div className="editor-header">
-            <div className="editor-dot"></div>
-            <div className="editor-dot"></div>
-            <div className="editor-dot"></div>
+            <div className="editor-dot" />
+            <div className="editor-dot" />
+            <div className="editor-dot" />
           </div>
+
           <textarea
             className="editor"
             value={editorCode}
@@ -183,11 +202,12 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
             <div className="input-header">
               <span className="input-title">📥 INPUT</span>
             </div>
+
             <textarea
               className="input-area"
               value={inputData}
               onChange={(e) => setInputData(e.target.value)}
-              placeholder="Enter input data here (stdin)..."
+              placeholder="Enter input data here..."
               spellCheck="false"
             />
           </div>
@@ -196,6 +216,7 @@ export default function CodeExecutor({ code: buggyCodes = {}, problemId }) {
             <div className="output-header">
               <span className="output-title">📋 OUTPUT</span>
             </div>
+
             <div
               className={`terminal${isError ? ' error' : ''}${!output ? ' empty' : ''}`}
               aria-live="polite"

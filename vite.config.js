@@ -14,4 +14,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  server: {
+    proxy: {
+      // Socket.IO
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        ws: true,
+      },
+    },
+  },
 });

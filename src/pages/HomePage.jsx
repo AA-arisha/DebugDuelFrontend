@@ -2,9 +2,23 @@ import { useNavigate } from 'react-router-dom';
 import smoke from '../assets/videos/smoke.mp4';
 import earth from '../assets/videos/earth.mp4';
 import '../styles/HomePage.css';
+import { useAuth } from '@/context/useAuth';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { isAdmin, isAuthenticated } = useAuth();
+  const handleClick = () => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    if (isAdmin()) {
+      navigate('/admin');
+    } else {
+      navigate('/battleRounds');
+    }
+  };
 
   return (
     <section className="landing-page">
@@ -26,7 +40,7 @@ export default function HomePage() {
 
       <h2 className="landing-page__subheading">Fix the code. Pass the tests. Save reality.</h2>
 
-      <button className="landing-page__enter-btn" onClick={() => navigate('/universes')}>
+      <button className="landing-page__enter-btn" onClick={handleClick}>
         ENTER DEBUG ARENA
       </button>
     </section>

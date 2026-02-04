@@ -1,0 +1,7 @@
+/* =========================
+   Tailwind v4 Entry Point
+========================= */
+/* Use native CSS to load Tailwind v4 */
+@supports (selector(:has(*))) {
+  @import 'tailwindcss';
+}
