@@ -2,8 +2,17 @@ import Timer from './Timer';
 import { Lock, Unlock, Trash, Play, Square, Clock, Scale } from 'lucide-react';
 import { useState } from 'react';
 
-export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProcessing = false }) {
-  const { roundNumber, name, duration, status, weight, startTime, endsAt } = round;
+export function RoundCard({
+  round,
+  onOpen,
+  onLockToggle,
+  onStart,
+  onStop,
+  onDelete,
+  isProcessing = false,
+}) {
+  const { id, roundNumber, name, duration, status, weight, startAt, endAt } = round;
+
   const [isHovered, setIsHovered] = useState(false);
   const isLocked = status === 'LOCKED';
   const isActive = status === 'ACTIVE';
@@ -169,25 +178,25 @@ export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProc
         </div>
 
         {/* Time Info */}
-        {(startTime || endsAt) && (
+        {(startAt || endAt) && (
           <div className="mb-5 p-4 rounded-xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 backdrop-blur-sm">
             <div className="space-y-2.5">
-              {startTime && (
+              {startAt && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-400 font-medium">Started</span>
                   <span className="text-sm text-white font-semibold">
-                    {new Date(startTime).toLocaleTimeString([], {
+                    {new Date(startAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
                   </span>
                 </div>
               )}
-              {endsAt && (
+              {endAt && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-400 font-medium">Ends</span>
                   <span className="text-sm text-white font-semibold">
-                    {new Date(endsAt).toLocaleTimeString([], {
+                    {new Date(endAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -201,7 +210,12 @@ export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProc
         {/* Active Timer */}
         {isActive && (
           <div className="mb-5 p-5 rounded-xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-500/30 backdrop-blur-sm">
-            <Timer startTime={startTime} duration={duration} onComplete={onStop} />
+            <Timer
+              key={id} // forces remount on new round
+              roundId={id}
+              startAt={startAt}
+              endAt={endAt}
+            />
           </div>
         )}
 
@@ -237,7 +251,10 @@ export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProc
 
           {!isActive && !isCompleted && (
             <button
-              onClick={onStart}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStart && onStart();
+              }}
               disabled={isActive || isCompleted || isProcessing}
               className="group/btn relative flex items-center gap-2.5 px-5 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-lg shadow-amber-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/40 active:scale-95 overflow-hidden"
             >
@@ -281,8 +298,11 @@ export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProc
             </button>
           )} */}
 
-          {/* <button 
-            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(); }} 
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete && onDelete();
+            }}
             disabled={isProcessing}
             className="group/btn relative flex items-center gap-2.5 px-5 py-3 text-sm font-semibold rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border-2 border-slate-700/50 hover:border-red-500/50 text-slate-300 hover:text-red-400 transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
           >
@@ -291,7 +311,7 @@ export function RoundCard({ round, onOpen, onLockToggle, onStart, onStop, isProc
               <Trash className="w-4 h-4" />
               Delete
             </div>
-          </button> */}
+          </button>
         </div>
       </div>
     </div>

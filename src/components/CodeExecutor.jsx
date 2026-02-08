@@ -2,30 +2,10 @@ import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'r
 import api from '@/services/api';
 import { useAuth } from '@/context/useAuth';
 
-const FALLBACK_CODE = {
-  cpp: `#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello World!" << endl;
-    return 0;
-}`,
-  python: `print("Hello World!")`,
-  javascript: `console.log("Hello World!");`,
-  java: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello World!");
-    }
-}`,
-};
-
-export default forwardRef(function CodeExecutor({
-  code: buggyCodes = [],
-  questionId,
-  roundId,
-  userAttempt = null,
-  onSubmitSuccess = null,
-}, ref) {
+export default forwardRef(function CodeExecutor(
+  { code: buggyCodes = [], questionId, roundId, userAttempt = null, onSubmitSuccess = null },
+  ref
+) {
   const { user } = useAuth();
   const userId = user?.userId || user?.id || null;
 
@@ -49,7 +29,7 @@ export default forwardRef(function CodeExecutor({
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    const selectedCode = parsedCodes[language] || FALLBACK_CODE[language] || '// No code available';
+    const selectedCode = parsedCodes[language] || '// No code available';
     setEditorCode(selectedCode);
   }, [language, parsedCodes]);
 
@@ -67,15 +47,20 @@ export default forwardRef(function CodeExecutor({
     // prefer provided stdin over state so parent can trigger run immediately
     const stdinData = stdin !== null ? stdin : inputData;
     if (stdin !== null) setInputData(stdin);
-
+    // Debug: show payload that will be sent to /run
     try {
-      const response = await api.post('/run', {
-        code: editorCode,
+      const payload = { code: editorCode, language, stdin: stdinData };
+      console.log('[CodeExecutor] /run payload', {
+        codePreview: editorCode?.substring?.(0, 80),
         language,
-        stdin: stdinData,
+        stdinPreview: String(stdinData).substring(0, 120),
       });
+
+      const response = await api.post('/run', payload);
+      console.log('[CodeExecutor] /run response', response?.data);
       setOutput(response.data.output || 'Code executed successfully!');
     } catch (err) {
+      console.error('[CodeExecutor] /run error', err?.response?.data || err.message || err);
       setIsError(true);
       setOutput(err.response?.data?.message || err.message || 'Failed to execute code');
     } finally {
@@ -108,11 +93,7 @@ export default forwardRef(function CodeExecutor({
 
       if (data.success || data.solved) {
         setIsError(false);
-        setOutput(
-          `test cases passed! (${data.passedTests ?? data.passed ?? 'N/A'}/${
-            data.totalTests ?? data.total ?? 'N/A'
-          })`
-        );
+        setOutput('Code executed successfully!');
 
         // notify parent (hook/page) to refresh attempts / leaderboards
         if (typeof onSubmitSuccess === 'function') onSubmitSuccess({ questionId, result: data });
@@ -158,67 +139,63 @@ export default forwardRef(function CodeExecutor({
   };
 
   return (
-   <div className="exec-panel">
-  <div className="exec-header">
-    <div className="language-selector">
-      <span className="language-label">LANGUAGE</span>
-      <select className="select" value={language} onChange={handleLanguageChange}>
-        {languages.map((lang) => (
-          <option key={lang} value={lang}>
-            {languageNames[lang] || lang.toUpperCase()}
-          </option>
-        ))}
-      </select>
-    </div>
+    <div className="exec-panel">
+      <div className="exec-header">
+        <div className="language-selector">
+          <span className="language-label">LANGUAGE</span>
+          <select className="select" value={language} onChange={handleLanguageChange}>
+            {languages.map((lang) => (
+              <option key={lang} value={lang}>
+                {languageNames[lang] || lang.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
 
-    <div className="actions-group">
-      <button
-        className="button button-submit"
-        onClick={submitCode}
-        disabled={loading || userAttempt?.solved || userAttempt?.attempts >= 3}
-      >
-        {userAttempt?.solved
-          ? 'Solved'
-          : userAttempt?.attempts >= 3
-          ? 'Attempts exhausted'
-          : '✓ SUBMIT'}
-      </button>
-    </div>
-  </div>
-
-  <div className="editor-output-container">
-    <div className="editor-container">
-      <div className="editor-header">
-        <div className="editor-dot" />
-        <div className="editor-dot" />
-        <div className="editor-dot" />
+        <div className="actions-group">
+          <button
+            className="button button-submit"
+            onClick={submitCode}
+            disabled={loading || userAttempt?.solved || userAttempt?.attempts >= 3}
+          >
+            {userAttempt?.solved
+              ? 'Solved'
+              : userAttempt?.attempts >= 3
+              ? 'Attempts exhausted'
+              : '✓ SUBMIT'}
+          </button>
+        </div>
       </div>
 
-      <textarea
-        className="editor"
-        value={editorCode}
-        onChange={(e) => setEditorCode(e.target.value)}
-        spellCheck="false"
-      />
-    </div>
+      <div className="editor-output-container">
+        <div className="editor-container">
+          <div className="editor-header">
+            <div className="editor-dot" />
+            <div className="editor-dot" />
+            <div className="editor-dot" />
+          </div>
 
-    <div className="output-container">
-      <div className="output-header">
-        <span className="output-title">📋 OUTPUT</span>
-      </div>
+          <textarea
+            className="editor"
+            value={editorCode}
+            onChange={(e) => setEditorCode(e.target.value)}
+            spellCheck="false"
+          />
+        </div>
 
-      <div
-        className={`terminal${isError ? ' error' : ''}${!output ? ' empty' : ''}`}
-        aria-live="polite"
-      >
-        {output ? (
-          <pre>{output}</pre>
-        ) : (
-          'Output will appear here after running your code...'
-        )}
+        <div className="output-container">
+          <div className="output-header">
+            <span className="output-title">📋 OUTPUT</span>
+          </div>
+
+          <div
+            className={`terminal${isError ? ' error' : ''}${!output ? ' empty' : ''}`}
+            aria-live="polite"
+          >
+            {output ? <pre>{output}</pre> : 'Output will appear here after running your code...'}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-   );
- });
+  );
+});
