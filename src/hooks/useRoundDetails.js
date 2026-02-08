@@ -61,11 +61,12 @@ export default function useRoundDetails(roundId) {
     try {
       const res = await api.get(`/competitions/${competitionId}/leaderboard`);
       const data = res.data || [];
-      const mapped = transformLeaderboard(Array.isArray(data) ? data : data.entries || []);
+      const mapped = transformLeaderboard(Array.isArray(data) ? data : data.entries || []).map(
+        (e) => ({ ...e, score: e.score ?? e.totalScore ?? 0 })
+      ); // <-- fix
       setCompetitionLeaderboard(mapped);
       return mapped;
     } catch (err) {
-      // not critical; competition leaderboard may not be available
       console.warn('Failed to load competition leaderboard', err?.message || err);
       return [];
     }
@@ -138,37 +139,101 @@ export default function useRoundDetails(roundId) {
     if (!roundId) return;
     const socket = getSocket();
 
-    const onRoundUpdate = (payload) => {
-      // payload expected to be leaderboard entries
+    const onRoundLeaderboard = (payload) => {
       const mapped = transformLeaderboard(payload || []);
       setLeaderboard(mapped);
     };
 
-    const onCompetitionUpdate = (payload) => {
+    const onCompetitionLeaderboard = (payload) => {
       const mapped = transformLeaderboard(payload || []);
       setCompetitionLeaderboard(mapped);
     };
 
-    socket.emit('joinRound', { roundId });
-    socket.on('round_leaderboard_update', onRoundUpdate);
+    // server may emit a full round object when updated (including status/questions)
+    const onRoundUpdated = (payload) => {
+      console.log('[useRoundDetails] round_updated event received:', payload);
+      if (!payload) return;
+      // only apply updates for our round
+      if (String(payload.id) !== String(roundId)) {
+        console.log('[useRoundDetails] payload round id does not match current roundId', {
+          payloadId: payload.id,
+          roundId,
+        });
+        return;
+      }
 
-    // If there is a competition associated, also join
+      console.log('[useRoundDetails] updating roundInfo and questions from socket payload');
+      // merge roundInfo
+      setRoundInfo((prev) => {
+        const updated = { ...(prev || {}), ...payload };
+        console.log('[useRoundDetails] new roundInfo state:', {
+          status: updated.status,
+          id: updated.id,
+        });
+        return updated;
+      });
+
+      // if questions included in payload, replace them
+      if (Array.isArray(payload.questions)) {
+        console.log('[useRoundDetails] updating questions from payload');
+        setQuestions(payload.questions);
+      }
+
+      // if payload contains leaderboard, update
+      if (payload.leaderboard) {
+        console.log('[useRoundDetails] updating leaderboard from payload');
+        const mapped = transformLeaderboard(payload.leaderboard);
+        setLeaderboard(mapped);
+      }
+    };
+
+    socket.emit('joinRound', String(roundId));
+    socket.on('round_leaderboard_update', onRoundLeaderboard);
+    socket.on('round_updated', onRoundUpdated);
+
+    // Debug: log any socket events received to help diagnose missing events
+    if (typeof socket.onAny === 'function') {
+      const anyHandler = (event, ...args) => {
+        try {
+          console.debug(
+            '[useRoundDetails] socket event',
+            event,
+            args?.length === 1 ? args[0] : args
+          );
+        } catch {
+          console.debug('[useRoundDetails] socket event', event);
+        }
+      };
+      socket.onAny(anyHandler);
+
+      // cleanup
+      const removeAny = () => socket.offAny(anyHandler);
+      // attach removal to cleanup below
+      var __removeOnCleanup = removeAny;
+    }
+
     if (roundInfo?.competitionId) {
       socket.emit('joinCompetition');
-      socket.on('competition_leaderboard_update', onCompetitionUpdate);
+      socket.on('competition_leaderboard_update', onCompetitionLeaderboard);
     }
 
     return () => {
-      socket.off('round_leaderboard_update', onRoundUpdate);
-      socket.off('competition_leaderboard_update', onCompetitionUpdate);
-      // optionally leave rooms - not required by server spec but allowed
+      socket.off('round_leaderboard_update', onRoundLeaderboard);
+      socket.off('competition_leaderboard_update', onCompetitionLeaderboard);
+      socket.off('round_updated', onRoundUpdated);
       try {
-        socket.emit('leaveRound', { roundId });
+        socket.emit('leaveRound', String(roundId));
+      } catch {
+        // ignore
+      }
+
+      try {
+        if (typeof __removeOnCleanup === 'function') __removeOnCleanup();
       } catch {
         // ignore
       }
     };
-  }, [roundId, roundInfo]);
+  }, [roundId, roundInfo?.competitionId]); // Added competitionId to handle competition leaderboard updates
 
   return {
     roundInfo,

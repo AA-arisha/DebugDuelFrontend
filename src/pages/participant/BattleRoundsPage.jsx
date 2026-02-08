@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Swords, Flame, Skull, Clock, Lock, CheckCircle, Play } from 'lucide-react';
-import { useRounds } from '@/components/rounds/useRounds';
 import { useNavigate } from 'react-router-dom';
+import { getSocket } from '@/services/socket';
+import { useCallback } from 'react';
+import api from '@/services/api';
+import Timer from '@/components/rounds/Timer';
+import toast from 'react-hot-toast';
 // Generate particle styles OUTSIDE the component - this runs once when the module loads
 const particleStyles = Array.from({ length: 30 }).map(() => ({
   width: `${Math.random() * 3 + 1}px`,
@@ -16,21 +20,43 @@ const particleStyles = Array.from({ length: 30 }).map(() => ({
 
 export default function BattleRoundsPage() {
   const navigate = useNavigate();
-  const { rounds, fetchRounds } = useRounds();
-  const [_currentTime, setCurrentTime] = useState(new Date());
+  const socket = getSocket();
+  const [rounds, setRounds] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch rounds on mount
+  const fetchRounds = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/rounds');
+      setRounds(res.data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to fetch rounds');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchRounds();
-  }, [fetchRounds]);
+    // Join the competition_overall room to get all round updates
+    socket.emit('join', 'competition_overall');
 
-  // Update timer every second for active rounds
+    return () => {
+      socket.emit('leave', 'competition_overall');
+    };
+  }, [fetchRounds, socket]);
+  // Listen for live round updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const handler = (updatedRound) => {
+      setRounds((prevRounds) =>
+        prevRounds.map((r) => (r.id.toString() === updatedRound.id.toString() ? updatedRound : r))
+      );
+    };
+
+    socket.on('round_updated', handler);
+    return () => socket.off('round_updated', handler);
+  }, [socket]);
 
   // Handle round click
   const handleRoundClick = (round) => {
@@ -72,25 +98,6 @@ export default function BattleRoundsPage() {
     }
   };
 
-  // Calculate time remaining
-  const getTimeRemaining = (endsAt) => {
-    if (!endsAt) return null;
-
-    const now = new Date();
-    const end = new Date(endsAt);
-    const diff = end - now;
-
-    if (diff <= 0) return 'Ended';
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds}s`;
-  };
-
   // Get difficulty label based on round number or weight
   const getDifficultyLabel = (roundNumber, weight) => {
     if (weight) {
@@ -116,7 +123,7 @@ export default function BattleRoundsPage() {
         return '#ff7a00';
     }
   };
-
+  if (loading) return <p className="text-gray-400">Loading rounds...</p>;
   return (
     <div
       className="min-h-screen w-full p-4 md:p-8 relative overflow-hidden"
@@ -183,7 +190,7 @@ export default function BattleRoundsPage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
         {rounds.map((round, index) => {
           const difficulty = getDifficultyLabel(round.roundNumber, round.weight);
-          const _timeRemaining = round.status === 'ACTIVE' ? getTimeRemaining(round.endsAt) : null;
+          const isActive = round.status === 'ACTIVE';
           const isClickable = round.status === 'ACTIVE' || round.status === 'UNLOCKED';
 
           return (
@@ -219,8 +226,8 @@ export default function BattleRoundsPage() {
                   boxShadow: `0 0 30px ${
                     isClickable ? `${getStatusColor(round.status)}55` : 'rgba(255, 122, 0, 0.2)'
                   }`,
-                  minHeight: '420px',
-                  maxHeight: '420px',
+                  minHeight: '520px',
+                  maxHeight: '520px',
                 }}
               >
                 {/* Corner brackets */}
@@ -258,24 +265,6 @@ export default function BattleRoundsPage() {
                   {getStatusIcon(round.status)}
                   {round.status}
                 </div>
-
-                {/* Timer badge (if active)
-                {timeRemaining && round.status === 'ACTIVE' && (
-                  <div
-                    className="absolute top-4 left-4 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(255, 122, 0, 0.2), rgba(0, 0, 0, 0.9))',
-                      color: '#fbbf24',
-                      border: '2px solid rgba(251, 191, 36, 0.6)',
-                      fontFamily: "'Fira Code', monospace",
-                      backdropFilter: 'blur(10px)',
-                      boxShadow: '0 0 20px rgba(251, 191, 36, 0.3)',
-                    }}
-                  >
-                    <Clock className="w-4 h-4 animate-pulse" />
-                    <span>{timeRemaining}</span>
-                  </div>
-                )} */}
 
                 {/* Icon section */}
                 <div
@@ -345,10 +334,20 @@ export default function BattleRoundsPage() {
                         </span>
                       )}
                     </div>
+                    {isActive && (
+                      <div className="mb-5 p-5 rounded-xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-500/30 backdrop-blur-sm">
+                        <Timer
+                          key={round.id} // forces remount on new round
+                          roundId={round.id}
+                          startAt={round.startAt}
+                          endAt={round.endAt}
+                        />
+                      </div>
+                    )}
 
                     {/* Time information */}
                     <div className="space-y-2 mb-4">
-                      {round.startTime && (
+                      {round.startAt && (
                         <div
                           className="flex items-center gap-2 px-3 py-2 rounded-lg"
                           style={{
@@ -365,7 +364,7 @@ export default function BattleRoundsPage() {
                             style={{ color: '#4ade80', fontFamily: "'Fira Code', monospace" }}
                           >
                             Start:{' '}
-                            {new Date(round.startTime).toLocaleString('en-US', {
+                            {new Date(round.startAt).toLocaleString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',
@@ -374,7 +373,7 @@ export default function BattleRoundsPage() {
                           </span>
                         </div>
                       )}
-                      {round.endsAt && (
+                      {round.endAt && (
                         <div
                           className="flex items-center gap-2 px-3 py-2 rounded-lg"
                           style={{
@@ -391,7 +390,7 @@ export default function BattleRoundsPage() {
                             style={{ color: '#ef4444', fontFamily: "'Fira Code', monospace" }}
                           >
                             Ends:{' '}
-                            {new Date(round.endsAt).toLocaleString('en-US', {
+                            {new Date(round.endAt).toLocaleString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',

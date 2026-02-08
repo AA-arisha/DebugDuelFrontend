@@ -19,7 +19,7 @@ const TeamsListPage = () => {
 
   useEffect(() => {
     fetchTeams();
-  }, []);
+  }, [fetchTeams]);
 
   const filtered = teams.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
 

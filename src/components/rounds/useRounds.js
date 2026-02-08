@@ -1,11 +1,32 @@
 import { useState, useCallback } from 'react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-
+import { getSocket } from '@/services/socket';
+import { useEffect } from 'react';
 export const useRounds = () => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.emit('joinCompetition');
+    const handleUpdate = (updatedRound) => {
+      setRounds((prev) =>
+        prev.map((r) => (r.id?.toString() === updatedRound.id?.toString() ? updatedRound : r))
+      );
+    };
+
+    socket.on('round_updated', handleUpdate);
+    socket.on('round_started', handleUpdate);
+    socket.on('round_stopped', handleUpdate);
+
+    return () => {
+      socket.off('round_updated', handleUpdate);
+      socket.off('round_started', handleUpdate);
+      socket.off('round_stopped', handleUpdate);
+    };
+  }, []);
   // per-item loading map: { [id]: boolean }
   const [actionLoadingById, setActionLoadingById] = useState({});
 
@@ -48,7 +69,6 @@ export const useRounds = () => {
       setItemLoading(id, true);
       try {
         await api.put(`/admin/rounds/${id}/lock`);
-        await fetchRounds();
         toast.success('Round locked');
       } catch (err) {
         console.error(err);
@@ -57,7 +77,7 @@ export const useRounds = () => {
         setItemLoading(id, false);
       }
     },
-    [fetchRounds, setItemLoading]
+    [setItemLoading]
   );
 
   const unlockRound = useCallback(
@@ -65,7 +85,6 @@ export const useRounds = () => {
       setItemLoading(id, true);
       try {
         await api.put(`/admin/rounds/${id}/unlock`);
-        await fetchRounds();
         toast.success('Round unlocked');
       } catch (err) {
         console.error(err);
@@ -74,7 +93,7 @@ export const useRounds = () => {
         setItemLoading(id, false);
       }
     },
-    [fetchRounds, setItemLoading]
+    [setItemLoading]
   );
 
   const startRound = useCallback(
@@ -82,7 +101,6 @@ export const useRounds = () => {
       setItemLoading(id, true);
       try {
         await api.put(`/admin/rounds/${id}/start`);
-        await fetchRounds();
         toast.success('Round started');
       } catch (err) {
         console.error(err);
@@ -91,7 +109,7 @@ export const useRounds = () => {
         setItemLoading(id, false);
       }
     },
-    [fetchRounds, setItemLoading]
+    [setItemLoading]
   );
 
   const stopRound = useCallback(
@@ -99,7 +117,6 @@ export const useRounds = () => {
       setItemLoading(id, true);
       try {
         await api.put(`/admin/rounds/${id}/stop`);
-        await fetchRounds();
         toast.success('Round stopped');
       } catch (err) {
         console.error(err);
@@ -108,7 +125,7 @@ export const useRounds = () => {
         setItemLoading(id, false);
       }
     },
-    [fetchRounds, setItemLoading]
+    [setItemLoading]
   );
 
   const deleteRound = useCallback(
@@ -116,7 +133,6 @@ export const useRounds = () => {
       setItemLoading(id, true);
       try {
         await api.delete(`/admin/rounds/${id}`);
-        await fetchRounds();
         toast.success('Round deleted');
       } catch (err) {
         console.error(err);
@@ -125,7 +141,7 @@ export const useRounds = () => {
         setItemLoading(id, false);
       }
     },
-    [fetchRounds, setItemLoading]
+    [setItemLoading]
   );
 
   // Questions
