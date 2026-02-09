@@ -1,24 +1,14 @@
 class TemporalStabilityAnalyzer:
-    def __init__(self):
-        self.n = 0
-        self.k = 0
-        self.a = []
-
-    def read_input(self):
-        self.n, self.k = map(int, input().split())
-        self.a = list(map(int, input().split()))
-
-    def count_stable_timelines(self):
+    def count_stable_timelines(self, n, k, a):
         cnt = 0
-        for x in self.a:
-            if x >= self.k:
+        for x in a:
+            if x >= k:
                 cnt += 1
         return cnt
 
-    def process(self):
-        print(self.count_stable_timelines())
+if __name__ == "__main__":
+    n, k = map(int, input().split())
+    a = list(map(int, input().split()))
 
-
-analyzer = TemporalStabilityAnalyzer()
-analyzer.read_input()
-analyzer.process()
+    analyzer = TemporalStabilityAnalyzer()
+    print(analyzer.count_stable_timelines(n, k, a))

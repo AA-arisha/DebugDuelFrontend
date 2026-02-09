@@ -1,23 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct TemporalStabilityAnalyzer {
-    int n, k;
-    int *a;
-};
-
-void readInput(struct TemporalStabilityAnalyzer *t) {
-    scanf("%d %d", &t->n, &t->k);
-    t->a = (int *)malloc(t->n * sizeof(int));
-    for (int i = 0; i < t->n; i++) {
-        scanf("%d", &t->a[i]);
-    }
-}
-
-int countStableTimelines(struct TemporalStabilityAnalyzer *t) {
+int countStableTimelines(int n, int k, int *a) {
     int cnt = 0;
-    for (int i = 0; i < t->n; i++) {
-        if (t->a[i] >= t->k) {
+    for (int i = 0; i < n; i++) {
+        if (a[i] >= k) {
             cnt++;
         }
     }
@@ -25,8 +12,12 @@ int countStableTimelines(struct TemporalStabilityAnalyzer *t) {
 }
 
 int main() {
-    struct TemporalStabilityAnalyzer t;
-    readInput(&t);
-    printf("%d\n", countStableTimelines(&t));
+    int n, k;
+    scanf("%d %d", n, k);
+    *a = (int *)malloc((*n) * sizeof(int));
+    for (int i = 0; i < *n; i++) {
+        scanf("%d", &(*a)[i]);
+    }
+    printf("%d\n", countStableTimelines(n, k, a));
     return 0;
 }

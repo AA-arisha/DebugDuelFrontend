@@ -1,36 +1,28 @@
 import java.util.*;
 
 class TemporalStabilityAnalyzer {
-    private int n, k;
-    private int[] a;
 
-    public void readInput(Scanner sc) {
-        n = sc.nextInt();
-        k = sc.nextInt();
-        a = new int[n];
-        for (int i = 0; i < n; i++) {
-            a[i] = sc.nextInt();
-        }
-    }
-
-    public int countStableTimelines() {
+    public int countStableTimelines(int n, int k, int[] a) {
         int cnt = 0;
         for (int i = 0; i < n; i++) {
-            if (a[i] >= k) {   
+            if (a[i] >= k) {
                 cnt++;
             }
         }
         return cnt;
     }
 
-    public void process() {
-        System.out.println(countStableTimelines());
-    }
-
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+        int k = sc.nextInt();
+
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) {
+            a[i] = sc.nextInt();
+        }
         TemporalStabilityAnalyzer analyzer = new TemporalStabilityAnalyzer();
-        analyzer.readInput(sc);
-        analyzer.process();
+        System.out.println(analyzer.countStableTimelines(n, k, a));
     }
 }

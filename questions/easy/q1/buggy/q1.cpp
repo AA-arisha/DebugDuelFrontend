@@ -2,24 +2,8 @@
 using namespace std;
 
 class TemporalStabilityAnalyzer {
-private:
-    int n, k;
-    int *a;
-
 public:
-    TemporalStabilityAnalyzer() {
-        a = nullptr;
-    }
-
-    void readInput() {
-        cin >> n >> k;
-        a = new int[n];
-        for (int i = 0; i < n; i++) {
-            cin >> a[i];
-        }
-    }
-
-    int countStableTimelines() {
+    int countStableTimelines(int n, int k, int a[]) {
         int cnt = 0;
         for (int i = 0; i < n; i++) {
             if (a[i] >= k) {
@@ -28,17 +12,19 @@ public:
         }
         return cnt;
     }
-
-    void process() {
-        cout << countStableTimelines() << endl;
-    }
 };
 
 int main() {
+    int n, k;
+    cin >> n >> k;
+
+    int a[n];
+    for (int i = 0; i < n; i++) {
+        cin >> a[i];
+    }
 
     TemporalStabilityAnalyzer analyzer;
-    analyzer.readInput();
-    analyzer.process();
+    cout << analyzer.countStableTimelines(n, k, a) << endl;
 
     return 0;
 }
