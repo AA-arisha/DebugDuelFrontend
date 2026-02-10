@@ -1,0 +1,17 @@
+During a routine stabilization cycle, Paradox-Verse Kiro runs a calibration process issued by the Incognito Board. The goal of this process is to measure how instability changes across adjacent timelines.
+Each timeline reports a stability value. Instead of analyzing individual values, the calibration system evaluates how rapidly stability shifts from one timeline to the next by applying a predefined mathematical formula.
+Given the stability values of N timelines in order, the system computes a calibration score by evaluating the contribution of each timeline based on its immediate neighbors.
+
+For each index i, the contribution is defined as:
+
+f(i) = (a[i] − a[i−1]) / (a[i+1] − a[i])
+Where / means floor(or integer) division.
+
+In other words, if an index has both a left and a right neighbor:
+    The contribution is the difference between the current value and its left neighbor, divided by the difference between its right neighbor and the current value.
+    If either of the difference is 0, the contribution is 0.
+
+If an index does not have neighbors on both sides (i.e., it is the first or last element), its contribution is 0.
+The final calibration score is the sum of all such contributions.
+
+You are given the current implementation of the calibration module. Ensure that the system computes the correct calibration score for all valid inputs and completes execution successfully.

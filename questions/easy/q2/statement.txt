@@ -1,0 +1,12 @@
+During a minor Glitch event in Paradox-Verse, Paradox-Verse Kiro is testing a basic numeric transformation module used by the Incognito Board to verify timeline integrity.
+Each timeline is represented by a number. The system applies simple transformations to this number to check whether the timeline is behaving correctly. However, AntiVerse Kiro has interfered with the module, causing one of the transformations to behave incorrectly.
+You are given a simplified version of the transformation engine. The engine starts with a number and applies a sequence of commands. Your task is to debug the system so that each command behaves exactly as intended.
+This is a low-risk diagnostic round, meant to ensure the stabilization tools are functioning before deeper anomalies are addressed.
+Commands:
+INC → increase every digit by 1
+digit 9 becomes 0
+REV → reverse the digits
+SUM → print sum of digits
+END → stop processing and print final number without leading zeros
+
+It is guranteed final number will be greater than 0.
