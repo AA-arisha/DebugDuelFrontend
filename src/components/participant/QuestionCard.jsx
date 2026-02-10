@@ -1,7 +1,14 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import SolvedBadge from '../ui/SolvedBadge';
 
-export default function QuestionCard({ question, isClickable, onClick, getStatusColor }) {
+export default function QuestionCard({
+  question,
+  isClickable,
+  onClick,
+  getStatusColor,
+  isSolved = false,
+}) {
   return (
     <div
       key={question.id}
@@ -34,16 +41,19 @@ export default function QuestionCard({ question, isClickable, onClick, getStatus
       >
         <div className="p-5 flex flex-col h-full justify-between">
           <div>
-            <h3
-              className="text-base font-bold mb-3 leading-tight"
-              style={{
-                color: '#ff7a00',
-                fontFamily: "'Fira Code', monospace",
-                textShadow: '0 0 8px rgba(255, 122, 0, 0.3)',
-              }}
-            >
-              {question.title}
-            </h3>
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <h3
+                className="text-base font-bold leading-tight flex-1"
+                style={{
+                  color: '#ff7a00',
+                  fontFamily: "'Fira Code', monospace",
+                  textShadow: '0 0 8px rgba(255, 122, 0, 0.3)',
+                }}
+              >
+                {question.title}
+              </h3>
+              <SolvedBadge isSolved={isSolved} size="small" />
+            </div>
           </div>
 
           <div

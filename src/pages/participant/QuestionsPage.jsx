@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
 import useRoundDetails from '../../hooks/useRoundDetails';
+import useSolvedQuestions from '../../hooks/useSolvedQuestions';
 import Loader from '@/components/common/Loader';
 import { Link } from 'react-router-dom';
 import Timer from '../../components/participant/TimerParticipant';
 import QuestionCard from '@/components/participant/QuestionCard';
 import LeaderboardModal from '@/components/participant/LeaderboardModal';
 import { getSocket } from '@/services/socket';
+import { useAuth } from '@/context/useAuth';
 
 const particleStyles = Array.from({ length: 30 }).map(() => ({
   width: `${Math.random() * 3 + 1}px`,
@@ -26,6 +28,13 @@ export default function QuestionsPage() {
   const [filter, _setFilter] = useState('ALL');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const socket = getSocket();
+  const { user } = useAuth();
+
+  // Fetch solved questions for the current user
+  const { solvedQuestionIds, refetch: _refetchSolvedQuestions } = useSolvedQuestions(
+    user?.userId || user?.id
+  );
+
   // Debug: log socket connection state and lifecycle events
   useEffect(() => {
     if (!socket) {
@@ -264,6 +273,7 @@ export default function QuestionsPage() {
         ) : (
           filteredQuestions.map((question) => {
             const isClickable = status === 'ACTIVE';
+            const isSolved = solvedQuestionIds.includes(question.id);
             return (
               <QuestionCard
                 key={question.id}
@@ -271,6 +281,7 @@ export default function QuestionsPage() {
                 isClickable={isClickable}
                 onClick={handleQuestionClick}
                 getStatusColor={getStatusColor}
+                isSolved={isSolved}
               />
             );
           })
