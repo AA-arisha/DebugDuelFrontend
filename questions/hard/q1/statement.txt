@@ -1,0 +1,13 @@
+In the Paradox-Verse, Kiro discovers a fractured memory core: a two-dimensional grid of integers representing multiple timelines stacked together. Each row corresponds to a single timeline snapshot, but the Omniverse has already interfered with the way these snapshots are processed. Kiro cannot change the rules of execution — only trace them, step by step, and understand where reality bends.
+The system processes this grid in two parallel realities.
+In the first reality, the Paradox-Verse logic flattens the grid into a one-dimensional sequence by taking each row in its original order, sorting that row in increasing order, and then appending it to a growing array. This continues row by row until the entire grid has been flattened into a single linear timeline.
+In the second reality, controlled by Omniverse Kiro, the same grid is flattened again but this time each row is sorted in decreasing order before being appended. The rows are still processed in the same top-to-bottom order, but the internal ordering of each row is reversed compared to the first reality.
+Once both realities have produced their linear timelines, the system attempts to find synchronization between them. It searches for the longest contiguous fragment that appears exactly the same in both flattened timelines. The fragment must be continuous in both arrays, not scattered, and if multiple fragments of the same maximum length exist, the system locks onto the one that appears earliest in the Paradox-Verse timeline.
+This synchronized fragment becomes the anchor of reality.
+
+From this fragment, the system computes a stability value. It multiplies together all non-zero elements in the fragment to form a product. Zeros are ignored during multiplication, but if the fragment contains no non-zero values at all, the product collapses to zero.
+
+The system then performs a final stress test. It examines every possible contiguous subfragment of the synchronized fragment and computes the sum of each one. For every subfragment whose sum exceeds the previously computed product, the system increments an instability counter.
+At the end of the process, the system reports three values: the length of the synchronized fragment, the stability product, and the total number of subfragments whose sum exceeds that product.
+Your task is not to rewrite the algorithm.
+Your task is to find where the universe breaks.

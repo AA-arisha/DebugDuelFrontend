@@ -1,0 +1,4 @@
+The Incognito Board keeps logs of every creature on the farm; the logs are messy, stitched together from different sensors, corrupted timelines, and a mischievous AntiVerse signature that occasionally toggles bits. 
+Today the farm telemetry only reports the total number of legs observed at the central gate. Farmer John swears he's only ever raised chickens and cows, chickens scratch with two legs, cows stomp with four — but the sensors only return a single integer: the total number of legs counted.
+You are asked to help the Board reconstruct how many different farm configurations could have produced that count. A configuration is defined by the number of chickens and the number of cows; two configurations are different 
+if either number differs. The farm may be empty of one kind zero chickens or zero cows is perfectly valid. The total number of legs are small in input.

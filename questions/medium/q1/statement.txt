@@ -1,0 +1,9 @@
+The Paradox-Verse is collapsing under temporal instability, and Paradox-Verse Kiro must stabilize the universe’s Quantum Signature, a powerful integer that encodes the timeline itself.
+But he cannot do it alone. The OmniVerse Kiro, the prime anchor of all reality, intervenes — not to destroy, but to test the Paradox-Verse Kiro’s mastery over chaos.
+The duel unfolds as follows:
+    Paradox-Verse Kiro goes first. On his turn, he MUST swap any two digits of the Quantum Signature to try to minimize its final value.
+    OmniVerse Kiro, representing the unyielding flow of temporal law, goes next. On his turn, he removes the last digit of the signature.
+The duel continues alternately until only one digit remains.
+Paradox-Verse Kiro must play optimally to reduce the Quantum Signature as much as possible, preventing further fracturing of his universe.
+The current system tries to find the minimnum possible value of Quantum Signature but is failing. Can you debug it?
+It is guranteed that the initial signature will be greater than 10.

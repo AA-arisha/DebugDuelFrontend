@@ -1,0 +1,10 @@
+Within the Paradox-Verse, Kiro uncovers a fractured dual-timeline memory core. Two binary streams, s and t, each of length n, represent parallel executions of the same reality. Every position in these streams encodes a fundamental truth: 0 for stability, 1 for corruption. The problem is not that the streams differ the problem is that they must not.
+The Incognito Board insists that synchronization is possible, but the cost of intervention is strictly controlled. Every modification to reality consumes energy, and every action leaves a trace.
+Paradox-Verse Kiro is allowed three types of interventions.
+At any position, he may directly invert the state of a single bit in either stream, turning stability into corruption or corruption into stability. This is the most basic form of repair, but it is costly. Each such inversion consumes a fixed amount of energy, known as the flip cost.
+Alternatively, Kiro may exploit temporal elasticity within a single stream. By choosing two distinct positions, he can swap their values, effectively relocating corruption without destroying it. This operation may be applied within either s or t, but never across them. Each temporal swap has a fixed energy cost, known as the swap cost.
+Finally, there exists a more dangerous maneuver. At any position, Kiro may cross the boundary between realities and exchange the bit in s with the corresponding bit in t. This cross-timeline exchange is powerful — it preserves total corruption while redistributing it between universes but it risks destabilizing the multiversal fabric. Each such action incurs the cross cost.
+These operations may be performed in any order, any number of times. The system does not restrict Kiro’s strategy — only the total energy spent matters.
+The objective is absolute convergence.
+Through careful manipulation, Paradox-Verse Kiro must transform the system so that both binary streams become identical at every position. Whether that final state is perfect stability or total corruption is irrelevant only equality matters.
+Your task is to determine the minimum total energy cost required to bring the two timelines into perfect alignment.
