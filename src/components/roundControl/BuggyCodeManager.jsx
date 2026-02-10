@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../ui/button';
 
 export default function BuggyCodeManager({ buggyCode, onBuggyCodeChange }) {
-  const LANGUAGES = ['Python', 'JavaScript', 'Java', 'C++', 'Go', 'Rust', 'Ruby', 'PHP'];
+  const LANGUAGES = ['Python', 'Java', 'C++', 'C'];
 
   const addBuggyCode = () => {
     const newBuggyCode = {
