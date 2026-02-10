@@ -114,6 +114,18 @@
   white-space: pre-wrap;
 }
 
+.question-page__test-code--error {
+  background: rgba(255, 0, 0, 0.08);
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff6b6b;
+}
+
+.question-page__test-code--success {
+  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+}
+
 @media (max-width: 768px) {
   .question-page__test-case-header {
     flex-direction: column;

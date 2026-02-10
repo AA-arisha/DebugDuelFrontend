@@ -266,6 +266,8 @@ export default forwardRef(function CodeExecutor(
 
   useImperativeHandle(ref, () => ({
     runWithInput,
+    getCode: () => editorCode,
+    getLanguage: () => language,
   }));
 
   return (
