@@ -6,7 +6,7 @@ import { Badge } from '../components/ui/Badge';
 import QuestionsTable from '../components/roundControl/QuestionsTable';
 import RoundInfoCard from '../components/roundControl/RoundInfoCard';
 import Tabs from '../components/roundControl/Tabs';
-// import QuestionModal from '../components/roundControl/Modals/QuestionModal';
+import QuestionModal from '../components/roundControl/Modals/QuestionModal';
 import ViewQuestionModal from '../components/roundControl/Modals/ViewQuestionModal';
 import SubmissionModal from '../components/roundControl/Modals/SubmissionModal';
 import Leaderboard from '../components/roundControl/Leaderboard';
@@ -25,13 +25,13 @@ import RoundTabsContent from '../components/roundControl/RoundTabsContent';
 export default function RoundControlPanel() {
   const [activeTab, setActiveTab] = useState('questions');
   const [questions, setQuestions] = useState([]);
-  // const [questionModalOpen, setQuestionModalOpen] = useState(false);
+  const [questionModalOpen, setQuestionModalOpen] = useState(false);
   const [viewingQuestion, setViewingQuestion] = useState(null);
   const [_submissionModalOpen, setSubmissionModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [selectedRoundId, setSelectedRoundId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  // const [isSavingQuestion, setIsSavingQuestion] = useState(false);
+  const [isSavingQuestion, setIsSavingQuestion] = useState(false);
   const [showRoundModal, setShowRoundModal] = useState(false);
   const [roundInfo, setRoundInfo] = useState(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -51,14 +51,14 @@ export default function RoundControlPanel() {
     createRound,
     deleteRound,
     fetchQuestions,
-    // createQuestion,
-    // updateQuestion,
-    // addTestCase,
-    // updateTestCase,
-    // deleteTestCase,
-    // addBuggyCode,
-    // updateBuggyCode,
-    // deleteBuggyCode,
+    createQuestion,
+    updateQuestion,
+    addTestCase,
+    updateTestCase,
+    deleteTestCase,
+    addBuggyCode,
+    updateBuggyCode,
+    deleteBuggyCode,
     deleteQuestion,
     fetchRoundDetails: _fetchRoundDetails,
     // admin submissions
@@ -250,100 +250,100 @@ export default function RoundControlPanel() {
     }
   };
 
-  // const [editingQuestion, setEditingQuestion] = useState(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
 
-  // const handleAddQuestion = () => {
-  //   setEditingQuestion(null);
-  //   setQuestionModalOpen(true);
-  // };
+  const handleAddQuestion = () => {
+    setEditingQuestion(null);
+    setQuestionModalOpen(true);
+  };
 
-  // const handleEditQuestion = (q) => {
-  //   setEditingQuestion(q);
-  //   setQuestionModalOpen(true);
-  // };
+  const handleEditQuestion = (q) => {
+    setEditingQuestion(q);
+    setQuestionModalOpen(true);
+  };
 
-  // const handleSaveQuestion = async (payload) => {
-  //   if (!selectedRound) return;
-  //   setIsSavingQuestion(true);
-  //   try {
-  //     if (editingQuestion && editingQuestion.id) {
-  //       // update title/description
-  //       await updateQuestion(editingQuestion.id, {
-  //         title: payload.title,
-  //         description: payload.description,
-  //       });
+  const handleSaveQuestion = async (payload) => {
+    if (!selectedRound) return;
+    setIsSavingQuestion(true);
+    try {
+      if (editingQuestion && editingQuestion.id) {
+        // update title/description
+        await updateQuestion(editingQuestion.id, {
+          title: payload.title,
+          description: payload.problemStatement,
+        });
 
-  //       // --- Sync test cases (create / update / delete) ---
-  //       const existingTCs = editingQuestion.testCases || [];
-  //       const payloadTCs = payload.testCases || [];
-  //       const payloadTCIds = new Set();
-  //       for (const tc of payloadTCs) {
-  //         if (tc.id) {
-  //           payloadTCIds.add(tc.id);
-  //           await updateTestCase(tc.id, {
-  //             input: tc.input,
-  //             expectedOutput: tc.expectedOutput,
-  //             visible: !!tc.visible,
-  //           });
-  //         } else {
-  //           await addTestCase(editingQuestion.id, {
-  //             input: tc.input,
-  //             expectedOutput: tc.expectedOutput,
-  //             visible: !!tc.visible,
-  //           });
-  //         }
-  //       }
-  //       for (const existing of existingTCs) {
-  //         if (existing.id && !payloadTCIds.has(existing.id)) {
-  //           await deleteTestCase(existing.id);
-  //         }
-  //       }
+        // --- Sync test cases (create / update / delete) ---
+        const existingTCs = editingQuestion.testCases || [];
+        const payloadTCs = payload.testCases || [];
+        const payloadTCIds = new Set();
+        for (const tc of payloadTCs) {
+          if (tc.id) {
+            payloadTCIds.add(tc.id);
+            await updateTestCase(tc.id, {
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              visible: !!tc.visible,
+            });
+          } else {
+            await addTestCase(editingQuestion.id, {
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              visible: !!tc.visible,
+            });
+          }
+        }
+        for (const existing of existingTCs) {
+          if (existing.id && !payloadTCIds.has(existing.id)) {
+            await deleteTestCase(existing.id);
+          }
+        }
 
-  //       // --- Sync buggy codes (create / update / delete) ---
-  //       const existingBCs = editingQuestion.buggyCode || editingQuestion.buggyCodes || [];
-  //       const payloadBCs = payload.buggyCode || [];
-  //       const payloadBCIds = new Set();
-  //       for (const bc of payloadBCs) {
-  //         if (bc.id) {
-  //           payloadBCIds.add(bc.id);
-  //           await updateBuggyCode(bc.id, { language: bc.language, code: bc.code });
-  //         } else {
-  //           await addBuggyCode(editingQuestion.id, { language: bc.language, code: bc.code });
-  //         }
-  //       }
-  //       for (const existing of existingBCs) {
-  //         if (existing.id && !payloadBCIds.has(existing.id)) {
-  //           await deleteBuggyCode(existing.id);
-  //         }
-  //       }
-  //     } else {
-  //       const created = await createQuestion(selectedRound.id, {
-  //         title: payload.title,
-  //         problemStatement: payload.description,
-  //       });
-  //       if (created && created.id) {
-  //         for (const tc of payload.testCases || []) {
-  //           await addTestCase(created.id, {
-  //             input: tc.input,
-  //             expectedOutput: tc.expectedOutput,
-  //             visible: tc.visible,
-  //           });
-  //         }
-  //         for (const bc of payload.buggyCode || []) {
-  //           await addBuggyCode(created.id, { language: bc.language, code: bc.code });
-  //         }
-  //       }
-  //     }
+        // --- Sync buggy codes (create / update / delete) ---
+        const existingBCs = editingQuestion.buggyCode || editingQuestion.buggyCodes || [];
+        const payloadBCs = payload.buggyCodes || [];
+        const payloadBCIds = new Set();
+        for (const bc of payloadBCs) {
+          if (bc.id) {
+            payloadBCIds.add(bc.id);
+            await updateBuggyCode(bc.id, { language: bc.language, code: bc.code });
+          } else {
+            await addBuggyCode(editingQuestion.id, { language: bc.language, code: bc.code });
+          }
+        }
+        for (const existing of existingBCs) {
+          if (existing.id && !payloadBCIds.has(existing.id)) {
+            await deleteBuggyCode(existing.id);
+          }
+        }
+      } else {
+        const created = await createQuestion(selectedRound.id, {
+          title: payload.title,
+          problemStatement: payload.problemStatement,
+        });
+        if (created && created.id) {
+          for (const tc of payload.testCases || []) {
+            await addTestCase(created.id, {
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              visible: tc.visible,
+            });
+          }
+          for (const bc of payload.buggyCodes || []) {
+            await addBuggyCode(created.id, { language: bc.language, code: bc.code });
+          }
+        }
+      }
 
-  //     // refresh list
-  //     const qs = await fetchQuestions(selectedRound.id);
-  //     setQuestions(qs);
-  //     setQuestionModalOpen(false);
-  //     setEditingQuestion(null);
-  //   } finally {
-  //     setIsSavingQuestion(false);
-  //   }
-  // };
+      // refresh list
+      const qs = await fetchQuestions(selectedRound.id);
+      setQuestions(qs);
+      setQuestionModalOpen(false);
+      setEditingQuestion(null);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
 
   const handleDeleteQuestion = (id) => {
     // open confirm dialog
@@ -411,9 +411,9 @@ export default function RoundControlPanel() {
           detailsLoading={detailsLoading}
           detailsError={detailsError}
           questions={questions}
-          // onAddQuestion={handleAddQuestion}
+          onAddQuestion={handleAddQuestion}
           onViewQuestion={(q) => setViewingQuestion(q)}
-          // onEditQuestion={handleEditQuestion}
+          onEditQuestion={handleEditQuestion}
           onDeleteQuestion={handleDeleteQuestion}
           questionLoadingMap={actionLoadingById}
           // userAttemptsMap={userAttemptsMap}
@@ -427,7 +427,8 @@ export default function RoundControlPanel() {
         />
 
         {/* Question Modal */}
-        {/* <QuestionModal
+        <QuestionModal
+          key={editingQuestion?.id || 'new'}
           open={questionModalOpen}
           onClose={() => {
             setQuestionModalOpen(false);
@@ -436,7 +437,7 @@ export default function RoundControlPanel() {
           onSave={handleSaveQuestion}
           isSaving={isSavingQuestion}
           initialQuestion={editingQuestion}
-        /> */}
+        />
 
         {/* View Question Modal */}
         <ViewQuestionModal question={viewingQuestion} onClose={() => setViewingQuestion(null)} />
