@@ -27,7 +27,11 @@ export default forwardRef(function CodeExecutor(
   const parsedCodes = useMemo(() => {
     if (!Array.isArray(buggyCodes)) return {};
     return buggyCodes.reduce((acc, item) => {
-      if (item.language && item.code) acc[item.language] = item.code;
+      // Normalize language key to lowercase for consistent lookups
+      if (item.language && item.code) {
+        const normalizedLang = item.language.toLowerCase();
+        acc[normalizedLang] = item.code;
+      }
       return acc;
     }, {});
   }, [buggyCodes]);
@@ -42,113 +46,157 @@ export default forwardRef(function CodeExecutor(
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const monacoLanguage = monacoLanguageMap[language] || 'plaintext';
+  // Convert language to lowercase for Monaco mapping
+  const monacoLanguage = monacoLanguageMap[language?.toLowerCase()] || 'plaintext';
 
-  // Define a vibrant, VS Code-style theme
+  // Define a cyberpunk orange/green theme
   function handleEditorWillMount(monaco) {
+    // Always define the theme (Monaco handles duplicates gracefully)
     monaco.editor.defineTheme('vibrant-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        // Comments - Green & Italic
-        { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
-        { token: 'comment.line', foreground: '6A9955', fontStyle: 'italic' },
-        { token: 'comment.block', foreground: '6A9955', fontStyle: 'italic' },
+        // Comments - Muted Orange & Italic
+        { token: 'comment', foreground: 'CC8844', fontStyle: 'italic' },
+        { token: 'comment.line', foreground: 'CC8844', fontStyle: 'italic' },
+        { token: 'comment.block', foreground: 'CC8844', fontStyle: 'italic' },
+        { token: 'comment.documentation', foreground: 'CC8844', fontStyle: 'italic' },
 
-        // Keywords - Pink/Magenta & Bold
-        { token: 'keyword', foreground: 'C586C0', fontStyle: 'bold' },
-        { token: 'keyword.control', foreground: 'C586C0', fontStyle: 'bold' },
-        { token: 'keyword.operator', foreground: 'D4D4D4' },
-        { token: 'storage', foreground: '569CD6' },
-        { token: 'storage.type', foreground: '569CD6' },
-        { token: 'storage.modifier', foreground: '569CD6' },
+        // Keywords - Bright Orange & Bold
+        { token: 'keyword', foreground: 'FF7A00', fontStyle: 'bold' },
+        { token: 'keyword.control', foreground: 'FF7A00', fontStyle: 'bold' },
+        { token: 'keyword.operator', foreground: 'FF9440', fontStyle: 'bold' },
+        { token: 'storage', foreground: 'FF7A00', fontStyle: 'bold' },
+        { token: 'storage.type', foreground: 'FF7A00', fontStyle: 'bold' },
+        { token: 'storage.modifier', foreground: 'FF7A00', fontStyle: 'bold' },
 
-        // Strings - Orange
-        { token: 'string', foreground: 'CE9178' },
-        { token: 'string.quoted', foreground: 'CE9178' },
-        { token: 'string.regexp', foreground: 'D16969' },
+        // Strings - Neon Green
+        { token: 'string', foreground: '00FF88' },
+        { token: 'string.quoted', foreground: '00FF88' },
+        { token: 'string.regexp', foreground: '00DD77' },
+        { token: 'string.double', foreground: '00FF88' },
+        { token: 'string.single', foreground: '00FF88' },
 
-        // Numbers - Light Green
-        { token: 'number', foreground: 'B5CEA8' },
-        { token: 'constant.numeric', foreground: 'B5CEA8' },
+        // Numbers - Lime Green
+        { token: 'number', foreground: '88FF44' },
+        { token: 'constant.numeric', foreground: '88FF44' },
 
-        // Functions - Yellow
-        { token: 'entity.name.function', foreground: 'DCDCAA' },
-        { token: 'support.function', foreground: 'DCDCAA' },
-        { token: 'meta.function-call', foreground: 'DCDCAA' },
+        // Functions - Bright Orange/Yellow
+        { token: 'entity.name.function', foreground: 'FFAA33' },
+        { token: 'support.function', foreground: 'FFAA33' },
+        { token: 'meta.function-call', foreground: 'FFAA33' },
+        { token: 'entity.name.method', foreground: 'FFAA33' },
 
-        // Variables - Light Blue
-        { token: 'variable', foreground: '9CDCFE' },
-        { token: 'variable.parameter', foreground: '9CDCFE' },
-        { token: 'variable.other', foreground: '9CDCFE' },
+        // Variables & Identifiers - Cyan/Green
+        { token: 'variable', foreground: '00FFCC' },
+        { token: 'variable.parameter', foreground: '00FFCC' },
+        { token: 'variable.other', foreground: '00FFCC' },
+        { token: 'variable.language', foreground: 'FF7A00' },
+        { token: 'identifier', foreground: '00FFCC' },
+        { token: 'meta.definition.variable', foreground: '00FFCC' },
 
-        // Types & Classes - Cyan/Teal
-        { token: 'entity.name.type', foreground: '4EC9B0' },
-        { token: 'entity.name.class', foreground: '4EC9B0' },
-        { token: 'support.type', foreground: '4EC9B0' },
-        { token: 'support.class', foreground: '4EC9B0' },
+        // Types & Classes - Electric Green
+        { token: 'entity.name.type', foreground: '44FF66' },
+        { token: 'entity.name.class', foreground: '44FF66' },
+        { token: 'support.type', foreground: '44FF66' },
+        { token: 'support.class', foreground: '44FF66' },
+        { token: 'entity.name.namespace', foreground: '44FF66' },
 
-        // Constants - Purple
-        { token: 'constant', foreground: '4FC1FF' },
-        { token: 'constant.language', foreground: '569CD6' },
-        { token: 'constant.character', foreground: '569CD6' },
+        // Constants - Orange
+        { token: 'constant', foreground: 'FFAA00' },
+        { token: 'constant.language', foreground: 'FF8800' },
+        { token: 'constant.character', foreground: 'FF8800' },
+        { token: 'variable.other.constant', foreground: 'FFAA00' },
 
-        // Operators & Delimiters
-        { token: 'delimiter', foreground: 'D4D4D4' },
-        { token: 'delimiter.bracket', foreground: 'FFD700' },
-        { token: 'delimiter.parenthesis', foreground: 'FFD700' },
-        { token: 'delimiter.square', foreground: 'FFD700' },
+        // Operators & Delimiters - White/Orange
+        { token: 'delimiter', foreground: 'DDDDDD' },
+        { token: 'delimiter.bracket', foreground: 'FF7A00' },
+        { token: 'delimiter.parenthesis', foreground: 'FF7A00' },
+        { token: 'delimiter.square', foreground: 'FF7A00' },
+        { token: 'delimiter.curly', foreground: 'FF7A00' },
+        { token: 'punctuation', foreground: 'DDDDDD' },
 
-        // Preprocessor - C/C++
-        { token: 'meta.preprocessor', foreground: 'C586C0' },
-        { token: 'keyword.control.directive', foreground: 'C586C0' },
+        // Preprocessor - Bright Orange
+        { token: 'meta.preprocessor', foreground: 'FF9440' },
+        { token: 'keyword.control.directive', foreground: 'FF9440' },
+        { token: 'keyword.control.import', foreground: 'FF9440' },
 
         // Python specific
-        { token: 'support.function.builtin.python', foreground: 'DCDCAA' },
-        { token: 'constant.language.python', foreground: '569CD6' },
+        { token: 'support.function.builtin.python', foreground: 'FFAA33' },
+        { token: 'constant.language.python', foreground: 'FF7A00' },
+        { token: 'keyword.operator.logical.python', foreground: 'FF7A00' },
 
         // Java specific
-        { token: 'storage.type.java', foreground: '569CD6' },
-        { token: 'keyword.other.import.java', foreground: 'C586C0' },
-        { token: 'keyword.other.package.java', foreground: 'C586C0' },
+        { token: 'storage.type.java', foreground: 'FF7A00' },
+        { token: 'keyword.other.import.java', foreground: 'FF9440' },
+        { token: 'keyword.other.package.java', foreground: 'FF9440' },
+        { token: 'storage.type.annotation.java', foreground: 'FFAA33' },
 
-        // Invalid/Error
-        { token: 'invalid', foreground: 'F44747', fontStyle: 'italic' },
+        // C/C++ specific
+        { token: 'storage.type.built-in.primitive.c', foreground: 'FF7A00' },
+        { token: 'storage.type.built-in.primitive.cpp', foreground: 'FF7A00' },
+
+        // Invalid/Error - Red
+        { token: 'invalid', foreground: 'FF4444', fontStyle: 'italic' },
+
+        // Default text - Light gray/white
+        { token: '', foreground: 'E6E6E6' },
       ],
       colors: {
-        'editor.background': '#1e1e1e',
-        'editor.foreground': '#d4d4d4',
-        'editorLineNumber.foreground': '#858585',
-        'editorLineNumber.activeForeground': '#c6c6c6',
-        'editorCursor.foreground': '#ff6600',
-        'editor.selectionBackground': '#264f78',
-        'editor.inactiveSelectionBackground': '#3a3d41',
-        'editor.lineHighlightBackground': '#2a2a2a',
-        'editorWhitespace.foreground': '#404040',
-        'editorIndentGuide.background': '#404040',
-        'editorIndentGuide.activeBackground': '#707070',
-        'editor.findMatchBackground': '#515c6a',
-        'editor.findMatchHighlightBackground': '#ea5c0055',
-        'editorBracketMatch.background': '#0064001a',
-        'editorBracketMatch.border': '#888888',
+        'editor.background': '#0a0a0a',
+        'editor.foreground': '#e6e6e6',
+        'editorLineNumber.foreground': '#666666',
+        'editorLineNumber.activeForeground': '#ff7a00',
+        'editorCursor.foreground': '#00ff88',
+        'editor.selectionBackground': '#ff7a0033',
+        'editor.inactiveSelectionBackground': '#ff7a0022',
+        'editor.lineHighlightBackground': '#1a1a1a',
+        'editorWhitespace.foreground': '#333333',
+        'editorIndentGuide.background': '#222222',
+        'editorIndentGuide.activeBackground': '#ff7a00',
+        'editor.findMatchBackground': '#ff7a0044',
+        'editor.findMatchHighlightBackground': '#ff7a0022',
+        'editorBracketMatch.background': '#ff7a0033',
+        'editorBracketMatch.border': '#ff7a00',
       },
     });
   }
 
   function handleEditorDidMount(editor, monaco) {
-    // Ensure language is set correctly
+    // Get the model and ensure language is properly set
     const model = editor.getModel();
     if (model) {
+      // Set the correct language - this triggers tokenization
       monaco.editor.setModelLanguage(model, monacoLanguage);
     }
+
+    // Apply custom theme to editor
+    monaco.editor.setTheme('vibrant-dark');
   }
 
   useEffect(() => {
-    setEditorCode(parsedCodes[language] || '// No code available');
+    // Convert language to lowercase for parsedCodes lookup
+    const langKey = language?.toLowerCase();
+    const newCode = parsedCodes[langKey] || '// No code available';
+    setEditorCode(newCode);
   }, [language, parsedCodes]);
 
   const submitCode = async () => {
-    if (!questionId || !roundId || !userId) return;
+    console.log('🚀 Submit button clicked');
+    console.log('📊 Submit Data:', {
+      questionId,
+      roundId,
+      userId,
+      language: language?.toLowerCase(),
+      codeLength: editorCode?.length,
+    });
+
+    if (!questionId || !roundId || !userId) {
+      console.error('❌ Missing required data:', { questionId, roundId, userId });
+      setIsError(true);
+      setOutput('Error: Missing required data (questionId, roundId, or userId)');
+      return;
+    }
 
     setLoading(true);
     setOutput('Submitting...');
@@ -157,7 +205,7 @@ export default forwardRef(function CodeExecutor(
     try {
       const res = await api.post(`/rounds/${roundId}/questions/${questionId}/submit`, {
         code: editorCode,
-        language,
+        language: language?.toLowerCase(), // Send lowercase to backend
         userId,
       });
 
@@ -179,8 +227,45 @@ export default forwardRef(function CodeExecutor(
     }
   };
 
+  const runWithInput = async (testInput) => {
+    console.log('🏃 Run with input called:', testInput);
+
+    if (!testInput) {
+      setIsError(true);
+      setOutput('Error: No test input provided');
+      return;
+    }
+
+    setLoading(true);
+    setOutput('Running test...');
+    setIsError(false);
+
+    try {
+      const res = await api.post('/run', {
+        language: language?.toLowerCase(),
+        code: editorCode,
+        input: testInput,
+      });
+
+      const data = res.data || {};
+
+      if (data.error) {
+        setIsError(true);
+        setOutput(data.error);
+      } else {
+        setIsError(false);
+        setOutput(data.output || 'Code executed successfully!');
+      }
+    } catch (err) {
+      setIsError(true);
+      setOutput(err.response?.data?.message || err.message || 'Test run failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useImperativeHandle(ref, () => ({
-    runWithInput: () => {},
+    runWithInput,
   }));
 
   return (
@@ -254,7 +339,20 @@ export default forwardRef(function CodeExecutor(
             <span className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_currentColor]" />
           </div>
 
-          <div className="flex-1 z-10">
+          <div
+            className="flex-1 z-10"
+            style={{
+              isolation: 'isolate',
+              position: 'relative',
+            }}
+          >
+            {/* Allow Monaco's inline styles to work properly */}
+            <style>{`
+              /* Remove global CSS interference - let Monaco control its colors */
+              .monaco-editor .view-lines .view-line span[style*="color"] {
+                color: revert !important;
+              }
+            `}</style>
             <Editor
               height="100%"
               language={monacoLanguage}
@@ -263,6 +361,8 @@ export default forwardRef(function CodeExecutor(
               onChange={(v) => setEditorCode(v || '')}
               beforeMount={handleEditorWillMount}
               onMount={handleEditorDidMount}
+              loading="Loading editor..."
+              key={`${language}-${monacoLanguage}`}
               options={{
                 fontSize: 15,
                 fontFamily: "'Fira Code', 'Consolas', 'Courier New', monospace",
@@ -307,6 +407,10 @@ export default forwardRef(function CodeExecutor(
                 parameterHints: { enabled: true },
                 formatOnPaste: true,
                 formatOnType: true,
+                // Critical for syntax highlighting
+                'semanticHighlighting.enabled': true,
+                theme: 'vibrant-dark',
+                colorDecorators: true,
               }}
             />
           </div>

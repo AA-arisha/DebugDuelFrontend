@@ -4,12 +4,14 @@ import { useEffect, useState, useRef } from 'react';
 import CodeExecutor from '@/components/CodeExecutor';
 import { getSocket } from '@/services/socket';
 import useRoundDetails from '../../hooks/useRoundDetails';
+import { useAuth } from '@/context/useAuth';
 import '@/styles/QuestionPage.css';
 import Timer from '@/components/participant/TimerParticipant';
 
 export default function QuestionDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -143,6 +145,7 @@ export default function QuestionDetailPage() {
         code={problem.buggyCodes}
         questionId={problem.id}
         roundId={problem.roundId}
+        userId={user?.userId || user?.id}
       />
     </div>
   );
