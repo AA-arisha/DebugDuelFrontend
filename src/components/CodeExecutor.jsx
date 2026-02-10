@@ -244,7 +244,7 @@ export default forwardRef(function CodeExecutor(
       const res = await api.post('/run', {
         language: language?.toLowerCase(),
         code: editorCode,
-        input: testInput,
+        stdin: testInput,
       });
 
       const data = res.data || {};

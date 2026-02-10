@@ -83,7 +83,7 @@ export default function QuestionDetailPage() {
   const backRoundId = location.state?.roundId;
 
   return (
-    <div className="question-page">
+    <div className="question-page p-5">
       <div className="question-page__back-link">
         <Link to={backRoundId ? `/questions/${backRoundId}` : '/battleRounds'} className="brand">
           ← Back
@@ -100,7 +100,15 @@ export default function QuestionDetailPage() {
         </div>
       </div>
 
-      <div className="question-page__test-cases-section">
+      <CodeExecutor
+        ref={executorRef}
+        code={problem.buggyCodes}
+        questionId={problem.id}
+        roundId={problem.roundId}
+        userId={user?.userId || user?.id}
+      />
+
+      <div className="question-page__test-cases-section m-5">
         <h3 className="question-page__section-title">Test Cases</h3>
         <div className="question-page__test-cases-list">
           {visibleTestCases.length > 0 ? (
@@ -139,14 +147,6 @@ export default function QuestionDetailPage() {
           )}
         </div>
       </div>
-
-      <CodeExecutor
-        ref={executorRef}
-        code={problem.buggyCodes}
-        questionId={problem.id}
-        roundId={problem.roundId}
-        userId={user?.userId || user?.id}
-      />
     </div>
   );
 }
