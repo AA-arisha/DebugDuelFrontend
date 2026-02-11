@@ -31,8 +31,14 @@ public:
     char playDuel() {
         bool paradoxTurnFlag = true;
         while (signature.size() > 1) {
-            if (paradoxTurnFlag) paradoxTurn();
-            else omniTurn();
+            if (paradoxTurnFlag) {
+                cout<<"Paradox Verse Kiro turn.. .."<<endl;
+                   paradoxTurn();
+            }
+            else {
+                cout<<"Omniverse Verse Kiro turn.. .."<<endl;
+                omniTurn();
+            }
             paradoxTurnFlag = !paradoxTurnFlag;
         }
         return signature[0];

@@ -1,0 +1,12 @@
+In the central data hub of SpiralCore Systems, a matrix visualization module is responsible for printing a 2D grid in spiral order.
+
+Due to a system malfunction, the spiral traversal engine is broken. It either:
+
+    Skips elements
+
+    Prints elements multiple times
+
+    Or enters an infinite loop
+You are assigned as a Debug Engineer to repair the traversal logic.
+
+Given a matrix of size n × m, your task is to correctly print its elements in clockwise spiral order, starting from the top-left corner.
