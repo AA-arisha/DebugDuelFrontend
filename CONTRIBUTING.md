@@ -37,4 +37,4 @@ A few project conventions and guidelines to keep the codebase consistent:
   - Create files in the appropriate folder and add an export to `src/pages/index.js` or `src/components/index.js` if you want index exports.
   - Keep components focused and small; prefer props for configuration and avoid heavy logic in UI components.
 
-If you'd like, I can add a short PR checklist and a sample GitHub Actions workflow to the repo.
+
